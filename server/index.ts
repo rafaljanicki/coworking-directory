@@ -56,15 +56,29 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on port 5000
+  // ALWAYS serve the app on port 8080
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
-  const port = 5000;
-  server.listen({
+  const port = 8080;
+  // Attempt to listen with SO_REUSEPORT; fallback if unsupported
+  const listenOpts: { port: number; host: string; reusePort?: boolean } = {
     port,
     host: "0.0.0.0",
     reusePort: true,
-  }, () => {
+  };
+  const onError = (err: NodeJS.ErrnoException) => {
+    if (err.code === "ENOTSUP") {
+      log("reusePort not supported; retrying without reusePort");
+      server.listen(port, "0.0.0.0", () => {
+        log(`serving on port ${port}`);
+      });
+    } else {
+      throw err;
+    }
+  };
+  server.once("error", onError);
+  server.listen(listenOpts, () => {
+    server.off("error", onError);
     log(`serving on port ${port}`);
   });
 })();
