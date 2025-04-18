@@ -1,4 +1,4 @@
-import type { APIGatewayProxyEvent, Context, APIGatewayProxyResult, Handler } from 'aws-lambda';
+import type {APIGatewayProxyEvent, Context, APIGatewayProxyResult, Handler, Callback} from 'aws-lambda';
 import serverlessExpress from '@vendia/serverless-express';
 import { createApp } from './app';
 
@@ -10,7 +10,8 @@ let cachedHandler: Handler;
  */
 export const handler = async (
   event: APIGatewayProxyEvent,
-  context: Context
+  context: Context,
+  callback: Callback
 ): Promise<APIGatewayProxyResult> => {
   if (!cachedHandler) {
     // Initialize Express app and wrap in serverless-express
@@ -18,5 +19,5 @@ export const handler = async (
     cachedHandler = serverlessExpress({ app });
   }
   // Delegate the event to the cached handler
-  return cachedHandler(event, context) as Promise<APIGatewayProxyResult>;
+  return cachedHandler(event, context, callback) as Promise<APIGatewayProxyResult>;
 };
