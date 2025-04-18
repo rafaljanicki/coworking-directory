@@ -33,6 +33,42 @@ Resources:
           PRICING_PACKAGES_TABLE: !Ref PricingPackagesTable
           REPORTS_TABLE: !Ref ReportsTable
 
+  # DynamoDB tables
+  CoworkingSpacesTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      PrimaryKey:
+        Name: id
+        Type: Number
+
+  ServicesTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      PrimaryKey:
+        Name: id
+        Type: Number
+
+  SpaceServicesTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      PrimaryKey:
+        Name: id
+        Type: Number
+
+  PricingPackagesTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      PrimaryKey:
+        Name: id
+        Type: Number
+
+  ReportsTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      PrimaryKey:
+        Name: id
+        Type: Number
+
 Outputs:
   ApiUrl:
     Description: "API Gateway endpoint URL"
