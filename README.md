@@ -46,13 +46,20 @@ Coworking Offices Directory is a full-stack web application featuring:
 - All API requests require a valid API key in the `x-api-key` header.
 
 ### Frontend (Vite)
-- In the project root, run:
+- In the project root, run with your API key:
   ```bash
-  npm run dev
+  VITE_API_KEY=<YOUR_API_KEY> npm run dev
   # or
-  yarn dev
+  VITE_API_KEY=<YOUR_API_KEY> yarn dev
   ```
 - Open your browser at `http://localhost:8080`
+
+  To build for production (also include the key):
+  ```bash
+  VITE_API_KEY=<YOUR_API_KEY> npm run build
+  # or
+  VITE_API_KEY=<YOUR_API_KEY> yarn build
+  ```
 
 ## Production Build
 

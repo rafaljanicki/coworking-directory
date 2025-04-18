@@ -5,6 +5,7 @@ import { useFilters } from '@/hooks/useFilters';
 import { CompleteSpace } from '@/lib/types';
 import { API_BASE_URL } from '@/lib/config';
 
+import { API_BASE_URL, API_KEY } from '@/lib/config';
 export const useSpaces = () => {
   const { activeFilters } = useFilters();
   const [spaces, setSpaces] = useState<CoworkingSpace[]>([]);
@@ -46,7 +47,13 @@ export const useSpaces = () => {
     queryFn: async () => {
       const queryString = getQueryString();
       const url = `${endpoint}${queryString ? `?${queryString}` : ''}`;
-      return fetch(url).then(res => res.json());
+      // Include API key header if provided
+      const headers: Record<string, string> = {};
+      if (API_KEY) {
+        headers['x-api-key'] = API_KEY;
+      }
+      const res = await fetch(url, { headers });
+      return res.json();
     },
   });
   
