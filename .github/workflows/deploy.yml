@@ -1,4 +1,7 @@
 name: CI/CD Deployment
+permissions:
+  id-token: write
+  contents: read
 on:
   push:
     branches:
