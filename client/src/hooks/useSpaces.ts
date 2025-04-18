@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { CoworkingSpace } from '@shared/schema';
 import { useFilters } from '@/hooks/useFilters';
 import { CompleteSpace } from '@/lib/types';
+import { API_BASE_URL } from '@/lib/config';
 
 export const useSpaces = () => {
   const { activeFilters } = useFilters();
@@ -39,11 +40,12 @@ export const useSpaces = () => {
   };
   
   // Fetch the spaces based on filters
+  const endpoint = `${API_BASE_URL}/spaces`;
   const { data, isLoading, error } = useQuery({
-    queryKey: ['/api/spaces', activeFilters],
+    queryKey: [endpoint, activeFilters],
     queryFn: async () => {
       const queryString = getQueryString();
-      const url = `/api/spaces${queryString ? `?${queryString}` : ''}`;
+      const url = `${endpoint}${queryString ? `?${queryString}` : ''}`;
       return fetch(url).then(res => res.json());
     },
   });

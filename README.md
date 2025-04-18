@@ -71,7 +71,7 @@ Coworking Offices Directory is a full-stack web application featuring:
 ## Usage
 
 - Frontend: Access at `http://localhost:8080`
-- API endpoints: `http://localhost:3000/api`
+- API requests are directed to the base URL configured in `client/src/lib/config.ts` (default: `https://t4nlm7q6kd.execute-api.eu-central-1.amazonaws.com/Prod/`).
 
 ## Contributing
 

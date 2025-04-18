@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { FilterState } from '@/lib/types';
 import { queryClient } from '@/lib/queryClient';
+import { API_BASE_URL } from '@/lib/config';
 
 export const useFilters = () => {
   // Default filter state
@@ -32,7 +33,7 @@ export const useFilters = () => {
     setActiveFilters(initialFilters);
     
     // Invalidate queries to re-fetch with default filters
-    queryClient.invalidateQueries({ queryKey: ['/api/spaces'] });
+    queryClient.invalidateQueries({ queryKey: [`${API_BASE_URL}/spaces`] });
   }, [initialFilters]);
   
   // Apply current filters
@@ -40,7 +41,7 @@ export const useFilters = () => {
     setActiveFilters(filters);
     
     // Invalidate queries to re-fetch with new filters
-    queryClient.invalidateQueries({ queryKey: ['/api/spaces'] });
+    queryClient.invalidateQueries({ queryKey: [`${API_BASE_URL}/spaces`] });
   }, [filters]);
   
   return {

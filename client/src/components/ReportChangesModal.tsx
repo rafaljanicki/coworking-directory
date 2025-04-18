@@ -14,6 +14,7 @@ import {
 import { X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { API_BASE_URL } from "@/lib/config";
 import { ReportFormData } from "@/lib/types";
 
 interface ReportChangesModalProps {
@@ -71,7 +72,7 @@ const ReportChangesModal = ({
     
     try {
       // Submit the report to the API
-      await apiRequest('POST', '/api/reports', {
+      await apiRequest('POST', `${API_BASE_URL}/reports`, {
         ...formData,
         spaceId
       });
