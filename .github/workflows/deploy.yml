@@ -20,6 +20,11 @@ jobs:
         run: npm ci
       - name: Build
         run: npm run build
+      - name: Upload frontend build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend-dist
+          path: dist/public
   deploy_backend:
     needs: build
     runs-on: ubuntu-latest
@@ -46,5 +51,10 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ secrets.AWS_REGION }}
+      - name: Download frontend build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: frontend-dist
+          path: .
       - name: Deploy static website to S3
         run: aws s3 sync dist/public s3://${{ secrets.FRONTEND_S3_BUCKET }} --delete --acl public-read

@@ -1,6 +1,7 @@
 ## 2025-04-18 - CI/CD: Add GitHub Actions workflow for deployment
 
 - Created `.github/workflows/deploy.yml` with jobs for building (Node 22), backend deployment via AWS SAM using OIDC role-to-assume, and frontend static site deployment to S3.
+- Implemented artifact upload/download for `dist/public` between the build and deploy jobs using `actions/upload-artifact` and `actions/download-artifact` to ensure the frontend assets are available for S3 sync.
 - Added `permissions.id-token: write` and `permissions.contents: read` to enable OIDC authentication.
 
 ## 2025-04-18 - Add basic API key authorization via API Gateway
