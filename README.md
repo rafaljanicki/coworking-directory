@@ -78,9 +78,18 @@ Coworking Offices Directory is a full-stack web application featuring:
 
 ## Usage
 
-- Frontend: Access at `http://localhost:8080`
-- API requests are directed to the base URL configured in `client/src/lib/config.ts` (default: `https://t4nlm7q6kd.execute-api.eu-central-1.amazonaws.com/Prod/`).
-- CORS is enabled on the backend API to allow requests from any origin.
+ - Frontend: Access at `http://localhost:8080`
+ - API requests are directed to the base URL configured in `client/src/lib/config.ts` (default: `https://t4nlm7q6kd.execute-api.eu-central-1.amazonaws.com/Prod/`).
+ - CORS is enabled on the backend API to allow requests from any origin.
+
+- To call the API, include a valid API key in the `x-api-key` header.
+- Retrieve the API key (stack output "ApiKey") from your CloudFormation stack:
+  ```bash
+  aws cloudformation describe-stacks --stack-name <STACK_NAME> \
+    --query 'Stacks[0].Outputs[?OutputKey==`ApiKey`].OutputValue' \
+    --output text
+  ```
+- API Gateway URL is available under the "ApiUrl" output of the stack.
 
 ## Contributing
 

@@ -1,3 +1,9 @@
+## 2025-04-18 - Backend: Create API Gateway API Key and Usage Plan
+
+- Added `ApiGatewayApiKey`, `ApiGatewayUsagePlan`, and `ApiGatewayUsagePlanKey` resources to `server/template.yaml` for API key management.
+- The API key resource auto-generates a key bound to the Prod stage and assigns it to a usage plan.
+- Exported the API key value in CloudFormation Outputs under the key `ApiKey`.
+
 ## 2025-04-18 - CI/CD: Add GitHub Actions workflow for deployment
 
 - Created `.github/workflows/deploy.yml` with jobs for building (Node 22), backend deployment via AWS SAM using OIDC role-to-assume, and frontend static site deployment to S3.

@@ -77,7 +77,34 @@ Resources:
         Name: id
         Type: Number
 
+  ApiGatewayApiKey:
+    Type: AWS::ApiGateway::ApiKey
+    Properties:
+      Name: "CoworkingDirectoryApiKey"
+      Enabled: true
+      StageKeys:
+        - RestApiId: !Ref ServerlessRestApi
+          StageName: Prod
+
+  ApiGatewayUsagePlan:
+    Type: AWS::ApiGateway::UsagePlan
+    Properties:
+      UsagePlanName: "CoworkingDirectoryUsagePlan"
+      ApiStages:
+        - ApiId: !Ref ServerlessRestApi
+          Stage: Prod
+
+  ApiGatewayUsagePlanKey:
+    Type: AWS::ApiGateway::UsagePlanKey
+    Properties:
+      UsagePlanId: !Ref ApiGatewayUsagePlan
+      KeyId: !Ref ApiGatewayApiKey
+      KeyType: API_KEY
+
 Outputs:
   ApiUrl:
     Description: "API Gateway endpoint URL"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+  ApiKey:
+    Description: "API key value for authorized requests"
+    Value: !GetAtt ApiGatewayApiKey.Value
