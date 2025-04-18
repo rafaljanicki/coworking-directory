@@ -1,3 +1,9 @@
+## 2025-04-18 - Add basic API key authorization via API Gateway
+
+- Configured the API Gateway proxy event in `server/template.yaml` to require API keys (`Auth: ApiKeyRequired: true`).
+- Added an `ApiKey` CloudFormation parameter to pass a key at deploy time.
+- Updated README with instructions for local and production usage of API keys (using `x-api-key` header).
+
 ## 2025-04-18 - Centralize API Base URL in Frontend
 
 Prompt: Make the API base URL "https://t4nlm7q6kd.execute-api.eu-central-1.amazonaws.com/Prod/" in the frontend (client directory)

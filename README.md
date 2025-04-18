@@ -43,6 +43,7 @@ Coworking Offices Directory is a full-stack web application featuring:
   sam local start-api --template-file template.yaml
   ```
 - The API will be available at `http://localhost:3000` by default.
+- All API requests require a valid API key in the `x-api-key` header.
 
 ### Frontend (Vite)
 - In the project root, run:

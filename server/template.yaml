@@ -30,6 +30,8 @@ Resources:
           Properties:
             Path: /{proxy+}
             Method: ANY
+            Auth:
+              ApiKeyRequired: true
       Environment:
         Variables:
           NODE_ENV: production
