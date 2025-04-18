@@ -24,7 +24,7 @@ jobs:
         run: pip3 install aws-sam-cli
       - name: Deploy SAM application
         working-directory: server
-        run: sam build --config-env production && sam deploy --config-env production --capabilities CAPABILITY_IAM
+        run: sam build --config-env production && sam deploy --config-env production --no-confirm-changeset --no-fail-on-empty-changeset
   deploy_frontend:
     runs-on: ubuntu-latest
     env:
@@ -43,4 +43,6 @@ jobs:
       - name: Build
         run: npm run build:frontend
       - name: Deploy static website to S3
-        run: aws s3 sync dist/public s3://${{ secrets.FRONTEND_S3_BUCKET }} --delete --acl public-read
+        run: aws s3 sync dist/public s3://${{ secrets.FRONTEND_S3_BUCKET }} --delete
+      - name: Invalidate Cloudfront
+        run: aws cloudfront create-invalidation --distribution-id ${{ secrets.CDN_ID }} --paths "/*"
