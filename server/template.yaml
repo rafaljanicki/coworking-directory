@@ -24,6 +24,14 @@ Resources:
           Properties:
             Path: /{proxy+}
             Method: ANY
+      Environment:
+        Variables:
+          NODE_ENV: production
+          COWORKING_SPACES_TABLE: !Ref CoworkingSpacesTable
+          SERVICES_TABLE: !Ref ServicesTable
+          SPACE_SERVICES_TABLE: !Ref SpaceServicesTable
+          PRICING_PACKAGES_TABLE: !Ref PricingPackagesTable
+          REPORTS_TABLE: !Ref ReportsTable
 
 Outputs:
   ApiUrl:

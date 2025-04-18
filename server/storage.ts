@@ -8,6 +8,7 @@ import {
   Report,
   InsertReport 
 } from "@shared/schema";
+import AWS from "aws-sdk";
 
 export interface FilterOptions {
   location?: string;
@@ -39,6 +40,77 @@ export interface IStorage {
   getReports(): Promise<Report[]>;
   updateReportStatus(id: number, status: string): Promise<Report | undefined>;
 }
+// DynamoDB-based storage implementation
+export class DynamoStorage implements IStorage {
+  private client = new AWS.DynamoDB.DocumentClient();
+  private tables = {
+    spaces: process.env.COWORKING_SPACES_TABLE!,
+    services: process.env.SERVICES_TABLE!,
+    spaceServices: process.env.SPACE_SERVICES_TABLE!,
+    pricingPackages: process.env.PRICING_PACKAGES_TABLE!,
+    reports: process.env.REPORTS_TABLE!,
+  };
+  
+  async getSpaces(_filters: FilterOptions = {}): Promise<{ spaces: CoworkingSpace[]; total: number }> {
+    const result = await this.client.scan({ TableName: this.tables.spaces }).promise();
+    const spaces = (result.Items || []) as CoworkingSpace[];
+    return { spaces, total: spaces.length };
+  }
+  
+  async getSpaceById(id: number): Promise<CoworkingSpace | undefined> {
+    const result = await this.client.get({ TableName: this.tables.spaces, Key: { id } }).promise();
+    return result.Item as CoworkingSpace | undefined;
+  }
+  
+  async createSpace(_space: InsertCoworkingSpace): Promise<CoworkingSpace> {
+    throw new Error("createSpace not implemented in DynamoStorage");
+  }
+  async updateSpace(_id: number, _space: Partial<InsertCoworkingSpace>): Promise<CoworkingSpace | undefined> {
+    throw new Error("updateSpace not implemented in DynamoStorage");
+  }
+  async deleteSpace(_id: number): Promise<boolean> {
+    throw new Error("deleteSpace not implemented in DynamoStorage");
+  }
+  
+  async getServices(): Promise<Service[]> {
+    const result = await this.client.scan({ TableName: this.tables.services }).promise();
+    return (result.Items || []) as Service[];
+  }
+  
+  async getServicesBySpaceId(_spaceId: number): Promise<Service[]> {
+    // Simplified: return all services
+    return this.getServices();
+  }
+  
+  async createService(_service: InsertService): Promise<Service> {
+    throw new Error("createService not implemented in DynamoStorage");
+  }
+  
+  async getPricingPackagesBySpaceId(_spaceId: number): Promise<PricingPackage[]> {
+    const result = await this.client.scan({ TableName: this.tables.pricingPackages }).promise();
+    return (result.Items || []) as PricingPackage[];
+  }
+  async createPricingPackage(_pkg: InsertPricingPackage): Promise<PricingPackage> {
+    throw new Error("createPricingPackage not implemented in DynamoStorage");
+  }
+  
+  async createReport(report: InsertReport): Promise<Report> {
+    const id = Date.now();
+    const now = Date.now();
+    const newReport = { id, ...report, status: 'pending', createdAt: now, updatedAt: now };
+    await this.client.put({ TableName: this.tables.reports, Item: newReport }).promise();
+    return newReport as unknown as Report;
+  }
+  async getReports(): Promise<Report[]> {
+    const result = await this.client.scan({ TableName: this.tables.reports }).promise();
+    return (result.Items || []) as Report[];
+  }
+  async updateReportStatus(_id: number, _status: string): Promise<Report | undefined> {
+    throw new Error("updateReportStatus not implemented in DynamoStorage");
+  }
+}
+// Switch to DynamoDB storage by default
+export const storage = new DynamoStorage();
 
 export class MemStorage implements IStorage {
   private spaces: Map<number, CoworkingSpace>;
@@ -132,112 +204,6 @@ export class MemStorage implements IStorage {
             price: 80,
             billingPeriod: "day",
             features: ["9am-6pm access", "2 hrs meeting room credit"]
-          }
-        ]
-      },
-      {
-        name: "Mindspace",
-        city: "Warsaw",
-        address: "Koszykowa 61",
-        latitude: 52.2219,
-        longitude: 21.0131,
-        rating: 4.7,
-        imageUrl: "https://images.unsplash.com/photo-1600508773201-f5306c24ba53?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80",
-        services: [1, 3, 6, 7, 8, 9],
-        pricing: [
-          {
-            name: "Hot Desk",
-            description: "Flexible workspace with access to all common areas.",
-            price: 1100,
-            billingPeriod: "month",
-            features: ["Access 8am-8pm", "5 hrs meeting room credits", "Community events"]
-          },
-          {
-            name: "Dedicated Desk",
-            description: "Your own desk in our beautiful open space.",
-            price: 1500,
-            billingPeriod: "month",
-            features: ["24/7 access", "15 hrs meeting room credits", "Personal locker", "Mail handling"]
-          },
-          {
-            name: "Private Office",
-            description: "Fully furnished private office for your team.",
-            price: 2600,
-            billingPeriod: "month",
-            features: ["24/7 access", "30 hrs meeting room credits", "Privacy for your team"]
-          }
-        ]
-      },
-      {
-        name: "Spaces Wrocław",
-        city: "Wrocław",
-        address: "Ruska 51/U7",
-        latitude: 51.1079,
-        longitude: 17.0385,
-        rating: 4.5,
-        imageUrl: "https://images.unsplash.com/photo-1520881363902-a0ff4e722963?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80",
-        services: [1, 2, 3, 4, 5, 7, 8, 10],
-        pricing: [
-          {
-            name: "Basic Membership",
-            description: "Access to open workspace and community benefits.",
-            price: 850,
-            billingPeriod: "month",
-            features: ["Business hours access", "Community events", "Basic amenities"]
-          },
-          {
-            name: "Dedicated Desk",
-            description: "Your own personal desk available 24/7.",
-            price: 1200,
-            billingPeriod: "month",
-            features: ["24/7 access", "10 hrs meeting room credits", "Storage locker"]
-          },
-          {
-            name: "Office Space",
-            description: "Private office space for teams.",
-            price: 2000,
-            billingPeriod: "month",
-            features: ["24/7 access", "20 hrs meeting room credits", "Custom branding options"]
-          },
-          {
-            name: "Virtual Office",
-            description: "Professional business address and mail handling.",
-            price: 300,
-            billingPeriod: "month",
-            features: ["Business address", "Mail handling", "2 days/month coworking"]
-          }
-        ]
-      },
-      {
-        name: "O4 Coworking",
-        city: "Gdańsk",
-        address: "Aleja Grunwaldzka 472B",
-        latitude: 54.4020,
-        longitude: 18.5721,
-        rating: 4.9,
-        imageUrl: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80",
-        services: [1, 2, 3, 4, 7, 8, 11, 12],
-        pricing: [
-          {
-            name: "Flex Desk",
-            description: "Flexible hotdesking in our creative space.",
-            price: 750,
-            billingPeriod: "month",
-            features: ["Business hours access", "4 hrs meeting room credits", "Community events"]
-          },
-          {
-            name: "Fixed Desk",
-            description: "Your own dedicated desk in our open space.",
-            price: 1050,
-            billingPeriod: "month",
-            features: ["24/7 access", "12 hrs meeting room credits", "Storage space"]
-          },
-          {
-            name: "Day Pass",
-            description: "Try out our space for a day.",
-            price: 50,
-            billingPeriod: "day",
-            features: ["Full day access", "Basic amenities", "Community experience"]
           }
         ]
       },
@@ -517,4 +483,3 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
