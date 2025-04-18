@@ -10,6 +10,12 @@ Globals:
     Environment:
       Variables:
         NODE_ENV: production
+  Api:
+    Cors:
+      AllowOrigin: "'*'"
+      AllowMethods: "'*'"
+      AllowHeaders: "'*'"
+      AllowCredentials: false
 
 Resources:
   ApiFunction:
