@@ -1,3 +1,7 @@
+## 2025-04-18 - CI/CD: Add GitHub Actions workflow for deployment
+
+- Created `.github/workflows/deploy.yml` with jobs for building (Node 22), backend deployment via AWS SAM using OIDC role-to-assume, and frontend static site deployment to S3.
+
 ## 2025-04-18 - Add basic API key authorization via API Gateway
 
 - Configured the API Gateway proxy event in `server/template.yaml` to require API keys (`Auth: ApiKeyRequired: true`).

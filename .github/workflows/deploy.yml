@@ -1,0 +1,47 @@
+name: CI/CD Deployment
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      VITE_API_KEY: ${{ secrets.API_KEY }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '22.x'
+      - name: Install dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build
+  deploy_backend:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '22.x'
+      - name: Install AWS SAM CLI
+        run: pip3 install aws-sam-cli
+      - name: Deploy SAM application
+        working-directory: server
+        run: sam deploy --template-file template.yaml --stack-name ${{ secrets.SAM_STACK_NAME }} --capabilities CAPABILITY_IAM
+  deploy_frontend:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      - name: Deploy static website to S3
+        run: aws s3 sync dist/public s3://${{ secrets.FRONTEND_S3_BUCKET }} --delete --acl public-read
