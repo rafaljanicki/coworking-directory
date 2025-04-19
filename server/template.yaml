@@ -106,5 +106,5 @@ Outputs:
     Description: "API Gateway endpoint URL"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
   ApiKey:
-    Description: "API key value for authorized requests"
-    Value: !GetAtt ApiGatewayApiKey.Value
+    Description: "API key ID for authorized requests"
+    Value: !Ref ApiGatewayApiKey

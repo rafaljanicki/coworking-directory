@@ -83,11 +83,16 @@ Coworking Offices Directory is a full-stack web application featuring:
  - CORS is enabled on the backend API to allow requests from any origin.
 
 - To call the API, include a valid API key in the `x-api-key` header.
-- Retrieve the API key (stack output "ApiKey") from your CloudFormation stack:
+- Retrieve the API key ID (stack output "ApiKey") from your CloudFormation stack:
   ```bash
   aws cloudformation describe-stacks --stack-name <STACK_NAME> \
     --query 'Stacks[0].Outputs[?OutputKey==`ApiKey`].OutputValue' \
     --output text
+  ```
+  
+- To get the actual API key value, use the AWS CLI with the `--include-value` flag:
+  ```bash
+  aws apigateway get-api-key --api-key <API_KEY_ID> --include-value
   ```
 - API Gateway URL is available under the "ApiUrl" output of the stack.
 

@@ -2,7 +2,7 @@
 
 - Added `ApiGatewayApiKey`, `ApiGatewayUsagePlan`, and `ApiGatewayUsagePlanKey` resources to `server/template.yaml` for API key management.
 - The API key resource auto-generates a key bound to the Prod stage and assigns it to a usage plan.
-- Exported the API key value in CloudFormation Outputs under the key `ApiKey`.
+- Exported the API key ID in CloudFormation Outputs under the key `ApiKey`. Use AWS CLI `get-api-key --include-value` to retrieve the actual key value.
 
 ## 2025-04-18 - CI/CD: Add GitHub Actions workflow for deployment
 
