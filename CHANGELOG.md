@@ -1,3 +1,26 @@
+## 2025-04-20 - Remove login and registration UI elements
+
+Prompt: Remove Login and Register, no need for that
+
+- Removed login button from main navigation bar
+- Removed registration button from main navigation bar
+- Removed login button from mobile menu
+- Simplified header UI without authentication controls
+- References: client/src/components/Header.tsx
+
+## 2025-04-20 - SEO improvements for biuracoworking.pl
+
+Prompt: Fix the SEO issues
+
+- Added meta description and keywords tags to improve search engine visibility
+- Created sitemap.xml and robots.txt files for better site indexing
+- Implemented structured data with JSON-LD via react-helmet-async
+- Enhanced semantic HTML with proper schema.org markup in space listings
+- Added image optimization with vite-plugin-image-optimizer
+- Localized UI text to Polish language for better regional targeting
+- Created SEO components for consistent metadata across pages
+- References: client/index.html, client/src/components/SEO.tsx, client/src/components/SpaceCard.tsx
+
 ## 2025-04-18 - Backend: Create API Gateway API Key and Usage Plan
 
 - Added `ApiGatewayApiKey`, `ApiGatewayUsagePlan`, and `ApiGatewayUsagePlanKey` resources to `server/template.yaml` for API key management.

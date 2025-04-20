@@ -9,6 +9,7 @@ import { Link } from "wouter";
 import { CompleteSpace } from "@/lib/types";
 import ReportChangesModal from "@/components/ReportChangesModal";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SpacePageSEO } from "@/components/SEO";
 
 const DetailPage = () => {
   const [_, params] = useRoute<{ id: string }>("/space/:id");
@@ -107,6 +108,7 @@ const DetailPage = () => {
   
   return (
     <>
+      {space && <SpacePageSEO space={space} />}
       <Header />
       
       <div className="container mx-auto px-4 py-8">

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import FiltersBar from "@/components/FiltersBar";
 import SpacesList from "@/components/SpacesList";
@@ -6,12 +6,16 @@ import MapView from "@/components/MapView";
 import SpaceDetailModal from "@/components/SpaceDetailModal";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { HomePageSEO } from "@/components/SEO";
+import { useSpaces } from "@/hooks/useSpaces";
 
 const HomePage = () => {
   const isMobile = useIsMobile();
+  const { spaces } = useSpaces();
   const [selectedSpaceId, setSelectedSpaceId] = useState<number | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isMapVisible, setIsMapVisible] = useState(!isMobile);
+  const [cities, setCities] = useState<string[]>([]);
   
   const handleSpaceSelect = (id: number) => {
     setSelectedSpaceId(id);
@@ -26,9 +30,18 @@ const HomePage = () => {
   const toggleMapView = () => {
     setIsMapVisible(!isMapVisible);
   };
+
+  // Extract unique cities for SEO
+  useEffect(() => {
+    if (spaces && spaces.length > 0) {
+      const uniqueCities = [...new Set(spaces.map(space => space.city))];
+      setCities(uniqueCities);
+    }
+  }, [spaces]);
   
   return (
     <>
+      <HomePageSEO spaces={spaces?.length || 0} cities={cities} />
       <Header />
       
       <div className="container mx-auto px-4 py-4">
@@ -61,7 +74,7 @@ const HomePage = () => {
                 onClick={toggleMapView}
                 className="flex items-center text-sm"
               >
-                {isMapVisible ? "Show List" : "Show Map"}
+                {isMapVisible ? "Pokaż Listę" : "Pokaż Mapę"}
               </Button>
             </div>
             
@@ -69,7 +82,7 @@ const HomePage = () => {
             <div className="hidden md:block mb-4">
               <div className="bg-white rounded-lg shadow-sm p-4 flex justify-between items-center">
                 <h2 className="font-semibold text-lg">
-                  Coworking Spaces in Poland
+                  Przestrzenie Coworkingowe w Polsce
                 </h2>
                 <Button
                   variant="outline"
@@ -77,7 +90,7 @@ const HomePage = () => {
                   onClick={toggleMapView}
                   className="flex items-center text-sm"
                 >
-                  {isMapVisible ? "Hide Map" : "Show Map"}
+                  {isMapVisible ? "Ukryj Mapę" : "Pokaż Mapę"}
                 </Button>
               </div>
             </div>

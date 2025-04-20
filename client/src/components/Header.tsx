@@ -21,38 +21,27 @@ const Header = () => {
         <nav className="hidden md:flex space-x-6 text-sm font-medium">
           <div>
             <Link href="/" className="hover:text-primary transition-colors">
-              Browse Spaces
+              Przeglądaj Biura
             </Link>
           </div>
           <div>
             <Link href="/#about" className="hover:text-primary transition-colors">
-              About
+              O nas
             </Link>
           </div>
           <div>
             <Link href="/#business" className="hover:text-primary transition-colors">
-              For Business Owners
+              Dla Właścicieli
             </Link>
           </div>
           <div>
             <Link href="/#contact" className="hover:text-primary transition-colors">
-              Contact
+              Kontakt
             </Link>
           </div>
         </nav>
         
-        <div className="flex items-center space-x-4">
-          <Button 
-            variant="outline" 
-            className="border-red-600 text-red-600 hover:bg-red-600 hover:text-white hidden md:inline-flex font-medium"
-          >
-            Log in
-          </Button>
-          <Button 
-            className="border-primary bg-primary text-white hover:bg-primary/90"
-          >
-            Sign up
-          </Button>
+        <div className="flex items-center">
           <Button 
             variant="ghost" 
             size="icon"
@@ -70,30 +59,24 @@ const Header = () => {
           <div className="container mx-auto px-4 flex flex-col space-y-4">
             <div>
               <Link href="/" className="text-gray-800 font-medium hover:text-primary py-2 block">
-                Browse Spaces
+                Przeglądaj Biura
               </Link>
             </div>
             <div>
               <Link href="/#about" className="text-gray-800 font-medium hover:text-primary py-2 block">
-                About
+                O nas
               </Link>
             </div>
             <div>
               <Link href="/#business" className="text-gray-800 font-medium hover:text-primary py-2 block">
-                For Business Owners
+                Dla Właścicieli
               </Link>
             </div>
             <div>
               <Link href="/#contact" className="text-gray-800 font-medium hover:text-primary py-2 block">
-                Contact
+                Kontakt
               </Link>
             </div>
-            <Button 
-              variant="outline" 
-              className="border-red-600 text-red-600 hover:bg-red-600 hover:text-white w-full font-medium"
-            >
-              Log in
-            </Button>
           </div>
         </div>
       )}

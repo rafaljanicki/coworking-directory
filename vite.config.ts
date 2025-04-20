@@ -3,12 +3,28 @@ import react from "@vitejs/plugin-react";
 import themePlugin from "@replit/vite-plugin-shadcn-theme-json";
 import path from "path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
+import { ViteImageOptimizer } from 'vite-plugin-image-optimizer';
 
 export default defineConfig({
+  assetsInclude: ['**/*.xml', '**/*.txt'],
   plugins: [
     react(),
     runtimeErrorOverlay(),
     themePlugin(),
+    ViteImageOptimizer({
+      png: {
+        quality: 80,
+      },
+      jpeg: {
+        quality: 80,
+      },
+      jpg: {
+        quality: 80,
+      },
+      webp: {
+        lossless: true,
+      }
+    }),
     ...(process.env.NODE_ENV !== "production" &&
     process.env.REPL_ID !== undefined
       ? [
@@ -39,6 +55,7 @@ export default defineConfig({
           }
         }
       }
-    }
+    },
+    copyPublicDir: true
   },
 });

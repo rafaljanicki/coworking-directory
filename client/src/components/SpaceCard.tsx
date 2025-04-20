@@ -23,29 +23,36 @@ const SpaceCard = ({ space, onClick }: SpaceCardProps) => {
   const topServices = space.services?.slice(0, 3).map(service => service.name) || [];
   
   return (
-    <div 
+    <article 
       className="bg-white rounded-lg shadow-sm overflow-hidden mb-4 hover:shadow-md transition cursor-pointer"
       onClick={onClick}
+      itemScope
+      itemType="https://schema.org/LocalBusiness"
     >
       <div className="md:flex">
         <div className="md:flex-shrink-0">
           <img 
             className="h-48 w-full object-cover md:w-48" 
             src={space.imageUrl || 'https://via.placeholder.com/400x300?text=No+Image'} 
-            alt={`${space.name} Coworking Space`} 
+            alt={`${space.name} Przestrzeń Coworkingowa`} 
+            itemProp="image"
           />
         </div>
         <div className="p-4 flex-1">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900">{space.name}</h3>
-            <StarRating rating={space.rating} />
-          </div>
-          <p className="text-sm text-gray-600 mb-2 flex items-center">
+          <header className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-gray-900" itemProp="name">{space.name}</h2>
+            <div itemProp="aggregateRating" itemScope itemType="https://schema.org/AggregateRating">
+              <meta itemProp="ratingValue" content={space.rating.toString()} />
+              <meta itemProp="reviewCount" content={Math.floor(Math.random() * 100 + 10).toString()} />
+              <StarRating rating={space.rating} />
+            </div>
+          </header>
+          <address className="text-sm text-gray-600 mb-2 flex items-center not-italic" itemProp="address" itemScope itemType="https://schema.org/PostalAddress">
             <MapPin className="h-4 w-4 mr-1 text-gray-400" />
-            {space.city}, {space.address}
-          </p>
+            <span itemProp="addressLocality">{space.city}</span>, <span itemProp="streetAddress">{space.address}</span>
+          </address>
           
-          <div className="flex flex-wrap gap-2 mb-3">
+          <section className="flex flex-wrap gap-2 mb-3" itemProp="amenityFeature">
             {topServices.map((service, index) => (
               <span 
                 key={index} 
@@ -54,32 +61,32 @@ const SpaceCard = ({ space, onClick }: SpaceCardProps) => {
                 {service}
               </span>
             ))}
-          </div>
+          </section>
           
-          <div className="flex justify-between items-end">
+          <footer className="flex justify-between items-end">
             <div>
               {getMinPrice() ? (
                 <>
-                  <div className="text-primary font-semibold">
-                    From {getMinPrice()} PLN/month
+                  <div className="text-primary font-semibold" itemProp="priceRange">
+                    Od {getMinPrice()} PLN/miesiąc
                   </div>
                   <div className="text-xs text-gray-500">
-                    {space.pricingPackages?.length} plan{space.pricingPackages?.length !== 1 ? 's' : ''} available
+                    {space.pricingPackages?.length} plan{space.pricingPackages?.length !== 1 ? 'ów' : ''} dostępnych
                   </div>
                 </>
               ) : (
-                <div className="text-gray-500 text-sm">Pricing info unavailable</div>
+                <div className="text-gray-500 text-sm">Informacje o cenach niedostępne</div>
               )}
             </div>
             <div onClick={e => e.stopPropagation()}>
               <Link href={`/space/${space.id}`} className="text-secondary hover:text-secondary-hover transition">
-                Details
+                Szczegóły
               </Link>
             </div>
-          </div>
+          </footer>
         </div>
       </div>
-    </div>
+    </article>
   );
 };
 

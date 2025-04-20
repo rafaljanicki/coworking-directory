@@ -3,6 +3,12 @@
 - `npm run dev`: Run the application
 - `npm run stop`: Stop both frontend and backend services
 
+# Recent Updates (as of 2025-04-20)
+- **SEO Improvements**: Added meta descriptions, sitemap.xml, robots.txt, structured data with JSON-LD, semantic HTML with schema.org markup, image optimization, and React Helmet for SEO management
+- **UI Updates**: Removed login and registration UI elements from header and mobile menu
+- **Localization**: Updated UI text to Polish language for better local targeting (primary domain: biuracoworking.pl)
+- **Dependencies Added**: react-helmet-async, vite-plugin-image-optimizer
+
 # Workflow
 - At the start, run both frontend and backend in the background. Frontend is accessible at http://localhost:8080 and backend at http://localhost:3000
 - IMPORTANT: At the end, run `npm run stop` to stop both services
@@ -20,6 +26,8 @@
 - **Styling**: Tailwind CSS
 - **Routing**: Wouter (lightweight router)
 - **Map**: Leaflet/React-Leaflet for interactive maps
+- **SEO**: react-helmet-async for metadata management
+- **Image Optimization**: vite-plugin-image-optimizer for production builds
 
 ## Backend (server directory)
 - **Framework**: AWS SAM (Serverless Application Model) with Express
@@ -49,9 +57,10 @@
 - **shared/**: Code shared between frontend and backend (schemas, types)
 
 ## SEO Status
-- Missing meta description tag
-- No sitemap.xml or robots.txt
-- No structured data (JSON-LD)
-- Limited semantic HTML
-- No image optimization
-- No SEO library implementation
+- ✅ Added meta description and keywords tags
+- ✅ Created sitemap.xml and robots.txt files
+- ✅ Implemented structured data (JSON-LD) via react-helmet-async
+- ✅ Enhanced semantic HTML with schema.org markup
+- ✅ Added image optimization with vite-plugin-image-optimizer
+- ✅ Implemented SEO library (react-helmet-async)
+- ✅ Localized content to Polish language for better regional targeting

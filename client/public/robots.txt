@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Sitemap: https://biuracoworking.pl/sitemap.xml
+
+# Disallow API endpoint attempts
+Disallow: /api/
+Disallow: /spaces/*/services
+Disallow: /spaces/*/pricing
