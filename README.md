@@ -62,12 +62,12 @@ Coworking Offices Directory is a full-stack web application featuring:
   ```
 
 ## Production Build
-
 - Build client and server:
   ```bash
-  npm run build
+  npm run build:frontend
+  npm run build:backend
   # or
-  yarn build
+  yarn build:frontend && yarn build:backend
   ```
 - Start in production mode:
   ```bash

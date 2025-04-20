@@ -23,6 +23,12 @@
 - Updated `useSpaces.ts` (`client/src/hooks/useSpaces.ts`) to attach API key header on GET requests.
 - Updated README to document `VITE_API_KEY` usage for development and production builds.
 
+## 2025-04-19 - Fix: Backend module format and build scripts
+
+- Updated `build:backend` script in `package.json` to output CommonJS modules (`--format=cjs`) and removed externalization of AWS SDK (`--external:aws-sdk`) so that the AWS SDK v2 is bundled into the Lambda bundle, resolving the "Cannot find module 'aws-sdk'" error and supporting the Node.js22.x runtime.
+- Added a top-level `build` script to run both frontend (`build:frontend`) and backend (`build:backend`) builds.
+- Updated README.md to clarify separate production build steps for client and server.
+
 ## 2025-04-18 - Centralize API Base URL in Frontend
 
 Prompt: Make the API base URL "https://t4nlm7q6kd.execute-api.eu-central-1.amazonaws.com/Prod/" in the frontend (client directory)

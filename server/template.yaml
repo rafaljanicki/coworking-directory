@@ -16,13 +16,22 @@ Globals:
       AllowMethods: "'*'"
       AllowHeaders: "'*'"
       AllowCredentials: false
+  
+Parameters:
+  ApiDomainName:
+    Type: String
+    Default: api.biuracoworking.pl
+    Description: Custom domain name for the API
+  ApiCertificateArn:
+    Type: String
+    Description: ARN of the ACM certificate for the custom domain (must be in the same region)
 
 Resources:
   ApiFunction:
     Type: AWS::Serverless::Function
     Properties:
       Handler: lambda.handler
-      CodeUri: .
+      CodeUri: ../dist
       Description: Backend API for coworking spaces
       Events:
         ApiProxy:
@@ -100,6 +109,23 @@ Resources:
       UsagePlanId: !Ref ApiGatewayUsagePlan
       KeyId: !Ref ApiGatewayApiKey
       KeyType: API_KEY
+  
+  # Custom Domain for API Gateway
+  ApiGatewayDomainName:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName: !Ref ApiDomainName
+      RegionalCertificateArn: !Ref ApiCertificateArn
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+
+  ApiGatewayBasePathMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      DomainName: !Ref ApiGatewayDomainName
+      RestApiId: !Ref ServerlessRestApi
+      Stage: Prod
 
 Outputs:
   ApiUrl:
@@ -108,3 +134,16 @@ Outputs:
   ApiKey:
     Description: "API key ID for authorized requests"
     Value: !Ref ApiGatewayApiKey
+  
+  # Custom domain outputs for DNS configuration
+  CustomDomainName:
+    Description: "Custom domain name for the API"
+    Value: !Ref ApiDomainName
+
+  CustomDomainRegionalDomainName:
+    Description: "Regional domain name to use as DNS target"
+    Value: !GetAtt ApiGatewayDomainName.RegionalDomainName
+
+  CustomDomainRegionalHostedZoneId:
+    Description: "Regional hosted zone ID for DNS alias"
+    Value: !GetAtt ApiGatewayDomainName.RegionalHostedZoneId
