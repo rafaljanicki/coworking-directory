@@ -36,12 +36,12 @@
 - **ReportChangesModal.tsx**: Form for users to report incorrect information
 
 ## API Endpoints
-- `GET /api/spaces`: List all coworking spaces (with filtering)
-- `GET /api/spaces/:id`: Get specific space details
-- `GET /api/services`: Get all available services
-- `GET /api/spaces/:id/services`: Get services for a specific space
-- `GET /api/spaces/:id/pricing`: Get pricing for a specific space
-- `POST /api/reports`: Submit correction reports
+- `GET /spaces`: List all coworking spaces (with filtering)
+- `GET /spaces/:id`: Get specific space details
+- `GET /services`: Get all available services
+- `GET /spaces/:id/services`: Get services for a specific space
+- `GET /spaces/:id/pricing`: Get pricing for a specific space
+- `POST /reports`: Submit correction reports
 
 ## Project Structure
 - **client/**: Frontend React application

@@ -15,7 +15,7 @@ interface FilterQuery {
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Get all coworking spaces with optional filtering
-  app.get("/api/spaces", async (req: Request, res: Response) => {
+  app.get("/spaces", async (req: Request, res: Response) => {
     try {
       const query = req.query as FilterQuery;
       
@@ -43,7 +43,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Get a specific coworking space by ID
-  app.get("/api/spaces/:id", async (req: Request, res: Response) => {
+  app.get("/spaces/:id", async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
       
@@ -65,7 +65,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Get all services
-  app.get("/api/services", async (_req: Request, res: Response) => {
+  app.get("/services", async (_req: Request, res: Response) => {
     try {
       const services = await storage.getServices();
       res.json(services);
@@ -76,7 +76,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Get services for a specific coworking space
-  app.get("/api/spaces/:id/services", async (req: Request, res: Response) => {
+  app.get("/spaces/:id/services", async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
       
@@ -93,7 +93,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Get pricing packages for a specific coworking space
-  app.get("/api/spaces/:id/pricing", async (req: Request, res: Response) => {
+  app.get("/spaces/:id/pricing", async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
       
@@ -110,7 +110,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Submit a report for a coworking space
-  app.post("/api/reports", async (req: Request, res: Response) => {
+  app.post("/reports", async (req: Request, res: Response) => {
     try {
       const reportData = insertReportSchema.parse(req.body);
       

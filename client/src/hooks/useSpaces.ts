@@ -3,9 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { CoworkingSpace } from '@shared/schema';
 import { useFilters } from '@/hooks/useFilters';
 import { CompleteSpace } from '@/lib/types';
-import { API_BASE_URL } from '@/lib/config';
-
 import { API_BASE_URL, API_KEY } from '@/lib/config';
+
 export const useSpaces = () => {
   const { activeFilters } = useFilters();
   const [spaces, setSpaces] = useState<CoworkingSpace[]>([]);

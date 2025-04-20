@@ -21,7 +21,8 @@ export async function createApp() {
       return originalJson.apply(this, [bodyJson, ...args]);
     };
     res.on('finish', () => {
-      if (path.startsWith('/api')) {
+      // Log all API requests (paths without .css, .js, .html, etc.)
+      if (!path.includes('.')) {
         const duration = Date.now() - start;
         let line = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
         if (capturedJson) {

@@ -82,6 +82,15 @@ Coworking Offices Directory is a full-stack web application featuring:
  - API requests are directed to the base URL configured in `client/src/lib/config.ts` (default: `https://t4nlm7q6kd.execute-api.eu-central-1.amazonaws.com/Prod/`).
  - CORS is enabled on the backend API to allow requests from any origin.
 
+### API Endpoints
+- `GET /spaces`: List all coworking spaces (supports filtering)
+- `GET /spaces/:id`: Get specific space details
+- `GET /services`: Get all available services
+- `GET /spaces/:id/services`: Get services for a specific space
+- `GET /spaces/:id/pricing`: Get pricing for a specific space
+- `POST /reports`: Submit correction reports
+
+### Authentication
 - To call the API, include a valid API key in the `x-api-key` header.
 - Retrieve the API key ID (stack output "ApiKey") from your CloudFormation stack:
   ```bash
