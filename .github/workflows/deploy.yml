@@ -25,7 +25,6 @@ jobs:
       - name: Install AWS SAM CLI
         run: pip3 install aws-sam-cli
       - name: Deploy SAM application
-        working-directory: server
         run: sam build --config-env production && sam deploy --config-env production --no-confirm-changeset --no-fail-on-empty-changeset
   deploy_frontend:
     runs-on: ubuntu-latest
