@@ -1,3 +1,16 @@
+## 2025-04-21 - Refactor backend to use individual Lambda functions
+
+Prompt: I get following error when running the AWS SAM CLI (by running command npm run dev:backend): "Dynamic require of "util" is not supported","stack":["Error: Dynamic require of "util" is not supported","    at file:///var/task/lambda.mjs:12:9"". Could you fix that somehow?
+
+- Refactored backend to use individual Lambda functions instead of Express
+- Created dedicated handler files in `server/handlers/` directory for each API endpoint
+- Added shared utilities in `server/handlers/utils.ts` for standardized responses
+- Fixed ESM dynamic require issues by adding Banner property to esbuild config
+- Updated template.yaml to point to individual handler functions
+- Removed dependency on @vendia/serverless-express
+- Updated CLAUDE.md with comprehensive project documentation
+- References: server/handlers/, server/lambda.ts, template.yaml
+
 ## 2025-04-20 - Fix API routing and add mock data for development
 
 Prompt: GET /spaces returns 404, why is that? Make the analysis before you try to fix it
