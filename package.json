@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "npm run dev:backend && npm run dev:frontend",
     "dev:frontend": "NODE_ENV=development VITE_API_BASE_URL=http://localhost:3000 VITE_API_KEY=local-development-api-key-123 pm2 start --update-env --name coworking-frontend vite",
-    "dev:backend": "sam build --config-env production && pm2 start --update-env --name coworking-backend sam -- local start-api --parameter-overrides \"ParameterKey=ApiKeyValue,ParameterValue=local-development-api-key-123\"",
+    "dev:backend": "pm2 start --update-env --name coworking-backend sam -- local start-api --parameter-overrides \"ParameterKey=ApiKeyValue,ParameterValue=local-development-api-key-123 ParameterKey=Environment,ParameterValue=development\"",
     "stop": "pm2 delete coworking-frontend && pm2 delete coworking-backend",
     "build:frontend": "vite build",
     "build:backend": "sam build --config-env production",

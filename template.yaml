@@ -81,7 +81,7 @@ Resources:
   HealthCheckFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: server/lambda.healthCheck
+      Handler: server/handlers/healthCheck.handler
       CodeUri: .
       Description: Health check endpoint
       Events:
@@ -101,11 +101,13 @@ Resources:
           - .js=.mjs
         Target: "es2020"
         Sourcemap: true
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
 
   SpacesListFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: server/lambda.getSpaces
+      Handler: server/handlers/getSpaces.handler
       CodeUri: .
       Description: Get all coworking spaces with optional filtering
       Events:
@@ -131,7 +133,7 @@ Resources:
   SpaceByIdFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: server/lambda.getSpaceById
+      Handler: server/handlers/getSpaceById.handler
       CodeUri: .
       Description: Get a specific coworking space by ID
       Events:
@@ -151,11 +153,13 @@ Resources:
           - .js=.mjs
         Target: "es2020"
         Sourcemap: true
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
 
   ServicesListFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: server/lambda.getServices
+      Handler: server/handlers/getServices.handler
       CodeUri: .
       Description: Get all services
       Events:
@@ -175,11 +179,13 @@ Resources:
           - .js=.mjs
         Target: "es2020"
         Sourcemap: true
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
 
   SpaceServicesFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: server/lambda.getSpaceServices
+      Handler: server/handlers/getSpaceServices.handler
       CodeUri: .
       Description: Get services for a specific coworking space
       Events:
@@ -199,11 +205,13 @@ Resources:
           - .js=.mjs
         Target: "es2020"
         Sourcemap: true
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
 
   SpacePricingFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: server/lambda.getSpacePricing
+      Handler: server/handlers/getSpacePricing.handler
       CodeUri: .
       Description: Get pricing for a specific coworking space
       Events:
@@ -223,11 +231,13 @@ Resources:
           - .js=.mjs
         Target: "es2020"
         Sourcemap: true
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
 
   CreateReportFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: server/lambda.createReport
+      Handler: server/handlers/createReport.handler
       CodeUri: .
       Description: Submit a report for a coworking space
       Events:
@@ -247,11 +257,13 @@ Resources:
           - .js=.mjs
         Target: "es2020"
         Sourcemap: true
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
 
   OptionsFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: server/lambda.handleOptions
+      Handler: server/handlers/handleOptions.handler
       CodeUri: .
       Description: Handle OPTIONS requests for CORS
       Events:
@@ -294,6 +306,8 @@ Resources:
           - .js=.mjs
         Target: "es2020"
         Sourcemap: true
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
 
   # API Gateway resources
   ApiGatewayApiKey:
