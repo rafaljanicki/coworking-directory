@@ -31,10 +31,6 @@ Parameters:
   ApiCertificateArn:
     Type: String
     Description: ARN of the ACM certificate for the custom domain (must be in the same region)
-  ApiKeyValue:
-    Type: String
-    Default: local-development-api-key-123
-    Description: Value for the API key (only for local development, will be auto-generated in production)
   Environment:
     Type: String
     Description: Name of the current environment
@@ -315,7 +311,6 @@ Resources:
     Properties:
       Name: "CoworkingDirectoryApiKey"
       Enabled: true
-      Value: !Ref ApiKeyValue
       StageKeys:
         - RestApiId: !Ref ServerlessRestApi
           StageName: Prod
