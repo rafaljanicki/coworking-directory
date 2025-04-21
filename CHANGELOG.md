@@ -1,3 +1,16 @@
+## 2025-04-20 - Fix API routing and add mock data for development
+
+Prompt: GET /spaces returns 404, why is that? Make the analysis before you try to fix it
+
+- Created mock-storage.ts with realistic test data for development environment
+- Updated storage.ts to use mock data in development or when DynamoDB fails
+- Added error handling and graceful fallbacks to storage implementation
+- Enhanced lambda.ts with better logging and error handling
+- Updated SAM template with explicit API routes for all endpoints (/spaces, /services, etc.)
+- Added a development API key configuration for local testing
+- Updated the dev scripts to pass API key parameters to SAM local
+- Fixed routes to correctly handle paths without the /api prefix
+
 ## 2025-04-20 - Remove login and registration UI elements
 
 Prompt: Remove Login and Register, no need for that

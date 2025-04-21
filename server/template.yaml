@@ -25,6 +25,10 @@ Parameters:
   ApiCertificateArn:
     Type: String
     Description: ARN of the ACM certificate for the custom domain (must be in the same region)
+  ApiKeyValue:
+    Type: String
+    Default: local-development-api-key-123
+    Description: Value for the API key (only for local development, will be auto-generated in production)
 
 Resources:
   ApiFunction:
@@ -34,6 +38,63 @@ Resources:
       CodeUri: ../dist
       Description: Backend API for coworking spaces
       Events:
+        # Root path for health check
+        ApiRoot:
+          Type: Api
+          Properties:
+            Path: /
+            Method: GET
+            Auth:
+              ApiKeyRequired: true
+        # Explicit route for spaces endpoint
+        ApiSpaces:
+          Type: Api
+          Properties:
+            Path: /spaces
+            Method: ANY
+            Auth:
+              ApiKeyRequired: true
+        # Spaces by ID endpoint
+        ApiSpacesById:
+          Type: Api
+          Properties:
+            Path: /spaces/{id}
+            Method: ANY
+            Auth:
+              ApiKeyRequired: true
+        # Services endpoint
+        ApiServices:
+          Type: Api
+          Properties:
+            Path: /services
+            Method: ANY
+            Auth:
+              ApiKeyRequired: true
+        # Space services endpoint
+        ApiSpaceServices:
+          Type: Api
+          Properties:
+            Path: /spaces/{id}/services
+            Method: ANY
+            Auth:
+              ApiKeyRequired: true
+        # Space pricing endpoint
+        ApiSpacePricing:
+          Type: Api
+          Properties:
+            Path: /spaces/{id}/pricing
+            Method: ANY
+            Auth:
+              ApiKeyRequired: true
+        # Reports endpoint
+        ApiReports:
+          Type: Api
+          Properties:
+            Path: /reports
+            Method: ANY
+            Auth:
+              ApiKeyRequired: true
+        # Legacy proxy path for backward compatibility
         ApiProxy:
           Type: Api
           Properties:
@@ -91,6 +152,7 @@ Resources:
     Properties:
       Name: "CoworkingDirectoryApiKey"
       Enabled: true
+      Value: !Ref ApiKeyValue
       StageKeys:
         - RestApiId: !Ref ServerlessRestApi
           StageName: Prod
