@@ -59,14 +59,15 @@ const mockSpaces: CoworkingSpace[] = [
 ];
 
 const mockServices: Service[] = [
-  { id: 1, name: "24/7 Access" },
-  { id: 2, name: "High-speed WiFi" },
-  { id: 3, name: "Meeting Rooms" },
-  { id: 4, name: "Coffee & Tea" },
-  { id: 5, name: "Printing Services" },
-  { id: 6, name: "Kitchen Access" },
-  { id: 7, name: "Mail Handling" },
-  { id: 8, name: "Phone Booths" }
+  { id: 1, name: "24/7 Access", serviceId: "24_7_access" },
+  { id: 2, name: "High-speed WiFi", serviceId: "wifi" },
+  { id: 3, name: "Meeting Rooms", serviceId: "meeting_rooms" },
+  { id: 4, name: "Coffee & Tea", serviceId: "coffee_tea" },
+  { id: 5, name: "Printing Services", serviceId: "printing" },
+  { id: 6, name: "Kitchen", serviceId: "kitchen" },
+  { id: 7, name: "Events Space", serviceId: "events_space" },
+  { id: 8, name: "Phone Booths", serviceId: "phone_booths" },
+  { id: 9, name: "Parking", serviceId: "parking" }
 ];
 
 const mockPackages: PricingPackage[] = [
@@ -155,8 +156,8 @@ export class MockStorage implements IStorage {
     // Filter by services if specified
     if (filters.services && filters.services.length > 0) {
       filteredSpaces = filteredSpaces.filter((space: any) => {
-        const spaceServiceNames = space.services.map((s: Service) => s.name);
-        return filters.services!.some(service => spaceServiceNames.includes(service));
+        const spaceServiceIds = space.services.map((s: any) => s.serviceId);
+        return filters.services!.some(service => spaceServiceIds.includes(service));
       });
     }
     

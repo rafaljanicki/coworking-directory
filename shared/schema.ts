@@ -32,7 +32,8 @@ export const serviceSchema = z.object({
   id: z.number(),                                                                                                                                                                                       
   name: z.string(),                                                                                                                                                                                     
   description: z.string().optional(),                                                                                                                                                                   
-  icon: z.string().optional(),                                                                                                                                                                          
+  icon: z.string().optional(),
+  serviceId: z.string().optional(),                                                                                                                                                                         
 });                                                                                                                                                                                                     
                                                                                                                                                                                                         
 // Schema for creating a new Service                                                                                                                                                                    
