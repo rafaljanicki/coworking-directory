@@ -24,7 +24,11 @@ const ForOwnersPage = () => {
             <p className="text-xl text-gray-700 mb-8">
               Zwiększ widoczność swojego biura i przyciągnij nowych klientów dzięki naszej platformie
             </p>
-            <Button size="lg" className="bg-primary hover:bg-primary/90">
+            <Button 
+              size="lg" 
+              className="bg-primary hover:bg-primary/90"
+              onClick={() => window.location.href = 'mailto:kontakt@biuracoworking.pl?subject=Kontakt%20ze%20strony%20biuracoworking.pl'}
+            >
               <Mail className="mr-2 h-4 w-4" />
               Skontaktuj się z nami
             </Button>
@@ -144,7 +148,12 @@ const ForOwnersPage = () => {
                     </p>
                     <div className="flex items-center mb-2">
                       <Mail className="h-5 w-5 text-primary mr-2" />
-                      <span className="font-medium">kontakt@biuracoworking.pl</span>
+                      <a 
+                        href="mailto:kontakt@biuracoworking.pl?subject=Kontakt%20ze%20strony%20biuracoworking.pl" 
+                        className="font-medium text-primary hover:underline"
+                      >
+                        kontakt@biuracoworking.pl
+                      </a>
                     </div>
                     <p className="text-sm text-gray-600 mt-2">
                       Odpowiemy na Twoje zapytanie w ciągu 24 godzin i przedstawimy szczegółową ofertę promocji 
@@ -159,10 +168,7 @@ const ForOwnersPage = () => {
                   <h2 className="text-2xl font-semibold mb-6">Przykład promowanego biura</h2>
                   
                   <div className="relative bg-white rounded-lg shadow-md overflow-hidden border-2 border-amber-400 mb-10">
-                    <div className="absolute top-4 right-4 bg-amber-500 text-white px-3 py-1 rounded-full text-xs font-medium flex items-center">
-                      <Sparkles className="h-3 w-3 mr-1" />
-                      Promowane
-                    </div>
+                    
                     
                     <div className="md:flex">
                       <div className="md:w-1/3 relative h-48 md:h-auto">
@@ -178,9 +184,15 @@ const ForOwnersPage = () => {
                       <div className="p-6 md:w-2/3 bg-gradient-to-r from-amber-50 to-white">
                         <div className="flex justify-between items-start mb-2">
                           <h3 className="text-xl font-bold text-gray-900">Premium Workspace</h3>
-                          <div className="flex items-center bg-amber-100 px-2 py-1 rounded text-amber-800 text-sm">
-                            <Star className="h-4 w-4 mr-1 fill-amber-500 text-amber-500" />
-                            <span>4.9</span>
+                          <div className="flex items-center gap-2">
+                            <div className="bg-amber-500 text-white px-3 py-1 rounded-full text-xs font-medium flex items-center">
+                              <Sparkles className="h-3 w-3 mr-1" />
+                              Promowane
+                            </div>
+                            <div className="flex items-center bg-amber-100 px-2 py-1 rounded text-amber-800 text-sm">
+                              <Star className="h-4 w-4 mr-1 fill-amber-500 text-amber-500" />
+                              <span>4.9</span>
+                            </div>
                           </div>
                         </div>
                         <div className="flex items-center text-gray-600 mb-4">
@@ -237,9 +249,13 @@ const ForOwnersPage = () => {
                     <p className="mb-4">
                       Skontaktuj się z nami już dziś, aby dowiedzieć się więcej o możliwościach promocji i uzyskać indywidualną ofertę:
                     </p>
-                    <Button size="lg" className="bg-primary hover:bg-primary/90 w-full md:w-auto">
+                    <Button 
+                      size="lg" 
+                      className="bg-primary hover:bg-primary/90 w-full md:w-auto"
+                      onClick={() => window.location.href = 'mailto:kontakt@biuracoworking.pl?subject=Kontakt%20ze%20strony%20biuracoworking.pl'}
+                    >
                       <Mail className="mr-2 h-4 w-4" />
-                      Napisz na kontakt@biuracoworking.pl
+                      Napisz do nas
                     </Button>
                   </div>
                 </div>
@@ -273,7 +289,10 @@ const ForOwnersPage = () => {
                     <span>Nieograniczona ilość zdjęć</span>
                   </li>
                 </ul>
-                <Button className="w-full bg-amber-500 hover:bg-amber-600 text-white">
+                <Button 
+                  className="w-full bg-amber-500 hover:bg-amber-600 text-white"
+                  onClick={() => window.location.href = 'mailto:kontakt@biuracoworking.pl?subject=Wycena%20pakietu%20Premium%20-%20biuracoworking.pl'}
+                >
                   Uzyskaj wycenę
                 </Button>
               </div>
@@ -294,7 +313,11 @@ const ForOwnersPage = () => {
                     <span>Do 10 zdjęć w galerii</span>
                   </li>
                 </ul>
-                <Button variant="outline" className="w-full">
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => window.location.href = 'mailto:kontakt@biuracoworking.pl?subject=Wycena%20pakietu%20Standard%20-%20biuracoworking.pl'}
+                >
                   Uzyskaj wycenę
                 </Button>
               </div>
@@ -311,7 +334,11 @@ const ForOwnersPage = () => {
                     <span>Do 5 zdjęć w galerii</span>
                   </li>
                 </ul>
-                <Button variant="outline" className="w-full">
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => window.location.href = 'mailto:kontakt@biuracoworking.pl?subject=Wycena%20pakietu%20Basic%20-%20biuracoworking.pl'}
+                >
                   Uzyskaj wycenę
                 </Button>
               </div>
@@ -321,9 +348,14 @@ const ForOwnersPage = () => {
               <p className="text-sm text-gray-600 mb-2">
                 Potrzebujesz spersonalizowanej oferty?
               </p>
-              <div className="flex items-center justify-center text-primary">
-                <Mail className="h-4 w-4 mr-1" />
-                <span className="font-medium">kontakt@biuracoworking.pl</span>
+              <div className="flex items-center justify-center">
+                <Mail className="h-4 w-4 mr-1 text-primary" />
+                <a 
+                  href="mailto:kontakt@biuracoworking.pl?subject=Kontakt%20ze%20strony%20biuracoworking.pl" 
+                  className="font-medium text-primary hover:underline"
+                >
+                  kontakt@biuracoworking.pl
+                </a>
               </div>
             </div>
           </div>
