@@ -13,9 +13,11 @@ L.Icon.Default.mergeOptions({
 
 interface MapViewProps {
   onMarkerClick: (id: number) => void;
+  expanded?: boolean;
+  onToggleExpand?: () => void;
 }
 
-const MapView = ({ onMarkerClick }: MapViewProps) => {
+const MapView = ({ onMarkerClick, expanded = false, onToggleExpand }: MapViewProps) => {
   const { spaces, loading } = useSpaces();
   
   // Default center - Warsaw, Poland
@@ -23,14 +25,22 @@ const MapView = ({ onMarkerClick }: MapViewProps) => {
   
   if (loading) {
     return (
-      <div className="bg-gray-100 rounded-lg overflow-hidden map-container relative flex items-center justify-center">
+      <div className={`bg-gray-100 rounded-lg overflow-hidden map-container relative flex items-center justify-center ${expanded ? 'expanded' : ''}`}>
         <div className="text-gray-500">Loading map...</div>
       </div>
     );
   }
   
   return (
-    <div className="bg-gray-100 rounded-lg overflow-hidden map-container relative">
+    <div className={`bg-gray-100 rounded-lg overflow-hidden map-container relative ${expanded ? 'expanded' : ''}`}>
+      {onToggleExpand && (
+        <button 
+          onClick={onToggleExpand}
+          className="absolute top-2 right-2 z-[1000] bg-white px-2 py-1 rounded shadow-md text-xs font-medium"
+        >
+          {expanded ? 'Minimalizuj mapę' : 'Rozwiń mapę'}
+        </button>
+      )}
       <MapContainer 
         center={center} 
         zoom={6} 

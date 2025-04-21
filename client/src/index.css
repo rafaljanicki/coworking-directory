@@ -16,6 +16,11 @@
 .map-container {
   height: 100%;
   width: 100%;
+  min-height: 100px;
+}
+
+/* Expanded map */
+.map-container.expanded {
   min-height: 400px;
 }
 

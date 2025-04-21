@@ -15,6 +15,7 @@ const HomePage = () => {
   const [selectedSpaceId, setSelectedSpaceId] = useState<number | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isMapVisible, setIsMapVisible] = useState(!isMobile);
+  const [isMapExpanded, setIsMapExpanded] = useState(false);
   const [cities, setCities] = useState<string[]>([]);
   
   const handleSpaceSelect = (id: number) => {
@@ -29,6 +30,10 @@ const HomePage = () => {
   
   const toggleMapView = () => {
     setIsMapVisible(!isMapVisible);
+  };
+  
+  const toggleMapExpand = () => {
+    setIsMapExpanded(!isMapExpanded);
   };
 
   // Extract unique cities for SEO
@@ -97,8 +102,12 @@ const HomePage = () => {
             
             {/* Map (when visible) */}
             {isMapVisible && (
-              <div className="w-full h-[calc(100vh-250px)] mb-4">
-                <MapView onMarkerClick={handleSpaceSelect} />
+              <div className={`w-full ${isMapExpanded ? 'h-[calc(100vh-250px)]' : 'h-[calc(25vh)]'} mb-4 transition-all duration-300`}>
+                <MapView 
+                  onMarkerClick={handleSpaceSelect} 
+                  expanded={isMapExpanded}
+                  onToggleExpand={toggleMapExpand}
+                />
               </div>
             )}
             
