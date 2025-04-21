@@ -106,6 +106,15 @@ Resources:
       Handler: server/handlers/getSpaces.handler
       CodeUri: .
       Description: Get all coworking spaces with optional filtering
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref CoworkingSpacesTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ServicesTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SpaceServicesTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PricingPackagesTable
       Events:
         Api:
           Type: Api
@@ -132,6 +141,15 @@ Resources:
       Handler: server/handlers/getSpaceById.handler
       CodeUri: .
       Description: Get a specific coworking space by ID
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref CoworkingSpacesTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ServicesTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SpaceServicesTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PricingPackagesTable
       Events:
         Api:
           Type: Api
@@ -158,6 +176,9 @@ Resources:
       Handler: server/handlers/getServices.handler
       CodeUri: .
       Description: Get all services
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ServicesTable
       Events:
         Api:
           Type: Api
@@ -184,6 +205,13 @@ Resources:
       Handler: server/handlers/getSpaceServices.handler
       CodeUri: .
       Description: Get services for a specific coworking space
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref CoworkingSpacesTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ServicesTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SpaceServicesTable
       Events:
         Api:
           Type: Api
@@ -210,6 +238,11 @@ Resources:
       Handler: server/handlers/getSpacePricing.handler
       CodeUri: .
       Description: Get pricing for a specific coworking space
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref CoworkingSpacesTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PricingPackagesTable
       Events:
         Api:
           Type: Api
@@ -236,6 +269,9 @@ Resources:
       Handler: server/handlers/createReport.handler
       CodeUri: .
       Description: Submit a report for a coworking space
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ReportsTable
       Events:
         Api:
           Type: Api
