@@ -9,7 +9,7 @@ interface BaseSEOProps {
 }
 
 export function BaseSEO({
-  title = 'CoWork Poland - Znajdź Przestrzenie Coworkingowe w Polsce',
+  title = 'Biura Coworking - Znajdź Przestrzenie Coworkingowe w Polsce',
   description = 'Znajdź najlepsze przestrzenie coworkingowe w Polsce. Filtruj według lokalizacji, ceny, ocen i udogodnień, aby odkryć idealną przestrzeń do pracy.',
   canonicalUrl = 'https://biuracoworking.pl',
   ogImage = '/coworking_directory_thumbnail.png',
@@ -52,7 +52,7 @@ export function HomePageSEO({ spaces = 0, cities = [] }: HomePageSEOProps) {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    name: 'CoWork Poland',
+    name: 'Biura Coworking',
     url: 'https://biuracoworking.pl',
     description: description,
     potentialAction: {
@@ -65,7 +65,7 @@ export function HomePageSEO({ spaces = 0, cities = [] }: HomePageSEOProps) {
   return (
     <>
       <BaseSEO 
-        title="CoWork Poland - Znajdź Przestrzenie Coworkingowe w Polsce"
+        title="Biura Coworking - Znajdź Przestrzenie Coworkingowe w Polsce"
         description={description}
       />
       <script type="application/ld+json">

@@ -3,6 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import NotFound from "@/pages/not-found";
 import HomePage from "@/pages/HomePage";
 import DetailPage from "@/pages/DetailPage";
+import ForOwnersPage from "@/pages/ForOwnersPage";
 import { HelmetProvider } from 'react-helmet-async';
 
 function Router() {
@@ -10,6 +11,7 @@ function Router() {
     <Switch>
       <Route path="/" component={HomePage} />
       <Route path="/space/:id" component={DetailPage} />
+      <Route path="/dla-wlascicieli" component={ForOwnersPage} />
       <Route component={NotFound} />
     </Switch>
   );

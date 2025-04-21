@@ -72,22 +72,24 @@ const SpacesList = ({ onSpaceClick }: SpacesListProps) => {
       <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
         <div className="flex justify-between items-center">
           <h2 className="font-semibold text-lg">
-            {totalSpaces} coworking space{totalSpaces !== 1 ? 's' : ''} found
+            {totalSpaces} {totalSpaces === 1 ? 'przestrzeń coworkingowa znaleziona' : 
+              totalSpaces > 1 && totalSpaces < 5 ? 'przestrzenie coworkingowe znalezione' : 
+              'przestrzeni coworkingowych znalezionych'}
           </h2>
           <div className="flex items-center">
-            <span className="text-sm text-gray-600 mr-2">Sort by:</span>
+            <span className="text-sm text-gray-600 mr-2">Sortuj według:</span>
             <Select
               value={sortMethod}
               onValueChange={setSortMethod}
             >
               <SelectTrigger className="w-[180px] border-0 focus:ring-0 text-sm">
-                <SelectValue placeholder="Recommended" />
+                <SelectValue placeholder="Polecane" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="recommended">Recommended</SelectItem>
-                <SelectItem value="price-low">Price: Low to High</SelectItem>
-                <SelectItem value="price-high">Price: High to Low</SelectItem>
-                <SelectItem value="rating">Rating</SelectItem>
+                <SelectItem value="recommended">Polecane</SelectItem>
+                <SelectItem value="price-low">Cena: od najniższej</SelectItem>
+                <SelectItem value="price-high">Cena: od najwyższej</SelectItem>
+                <SelectItem value="rating">Ocena</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -96,8 +98,8 @@ const SpacesList = ({ onSpaceClick }: SpacesListProps) => {
       
       {sortedSpaces.length === 0 ? (
         <div className="text-center py-8 bg-white rounded-lg shadow-sm">
-          <p className="text-gray-500">No spaces match your current filters.</p>
-          <p className="text-gray-500 text-sm mt-2">Try adjusting your search criteria.</p>
+          <p className="text-gray-500">Brak przestrzeni spełniających kryteria.</p>
+          <p className="text-gray-500 text-sm mt-2">Spróbuj dostosować kryteria wyszukiwania.</p>
         </div>
       ) : (
         sortedSpaces.map(space => (

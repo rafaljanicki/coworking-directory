@@ -14,15 +14,16 @@ import { useState } from "react";
 
 // Common services to filter by
 const SERVICES = [
-  { id: "24_7_access", label: "24/7 Access" },
-  { id: "wifi", label: "High-speed WiFi" },
-  { id: "meeting_rooms", label: "Meeting Rooms" },
-  { id: "coffee_tea", label: "Coffee & Tea" },
-  { id: "printing", label: "Printing Services" },
-  { id: "events_space", label: "Events Space" },
-  { id: "kitchen", label: "Kitchen" },
-  { id: "phone_booths", label: "Phone Booths" },
+  { id: "24_7_access", label: "Dostęp 24/7" },
+  { id: "wifi", label: "Szybkie WiFi" },
+  { id: "meeting_rooms", label: "Sale konferencyjne" },
+  { id: "coffee_tea", label: "Kawa i herbata" },
+  { id: "printing", label: "Usługi drukowania" },
+  { id: "events_space", label: "Przestrzeń eventowa" },
+  { id: "kitchen", label: "Kuchnia" },
+  { id: "phone_booths", label: "Budki telefoniczne" },
   { id: "parking", label: "Parking" },
+  { id: "private_desks", label: "Biurka prywatne" },
 ];
 
 interface FilterToggleProps {
@@ -48,12 +49,12 @@ const FiltersBar = ({ onToggleMap, isMapVisible }: FilterToggleProps) => {
             <SheetTrigger asChild>
               <Button variant="outline" size="sm" className="flex items-center text-sm font-medium text-gray-700 bg-gray-100 rounded-full">
                 <Filter className="mr-2 h-4 w-4" />
-                Filters
+                Filtry
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-full sm:max-w-md">
               <SheetHeader>
-                <SheetTitle>Filters</SheetTitle>
+                <SheetTitle>Filtry</SheetTitle>
               </SheetHeader>
               <div className="py-4">
                 <MobileFiltersContent 
@@ -72,7 +73,7 @@ const FiltersBar = ({ onToggleMap, isMapVisible }: FilterToggleProps) => {
           <div className="flex space-x-2">
             <Button variant="outline" size="sm" className="flex items-center text-sm font-medium text-gray-700 bg-gray-100 rounded-full">
               <SlidersHorizontal className="mr-2 h-4 w-4" />
-              Sort
+              Sortuj
             </Button>
             <Button 
               variant="outline" 
@@ -81,7 +82,7 @@ const FiltersBar = ({ onToggleMap, isMapVisible }: FilterToggleProps) => {
               onClick={onToggleMap}
             >
               <MapPin className="mr-2 h-4 w-4" />
-              {isMapVisible ? "List" : "Map"}
+              {isMapVisible ? "Lista" : "Mapa"}
             </Button>
           </div>
         </div>
@@ -90,7 +91,7 @@ const FiltersBar = ({ onToggleMap, isMapVisible }: FilterToggleProps) => {
       {/* Desktop Filters */}
       <div className="bg-white rounded-lg shadow-sm p-4 mb-4 hidden md:block">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-semibold text-lg">Filters</h2>
+          <h2 className="font-semibold text-lg">Filtry</h2>
           <div className="flex gap-2">
             <Button
               variant="ghost"
@@ -98,7 +99,7 @@ const FiltersBar = ({ onToggleMap, isMapVisible }: FilterToggleProps) => {
               className="text-xs text-gray-600"
               onClick={resetFilters}
             >
-              Reset
+              Resetuj
             </Button>
           </div>
         </div>
@@ -106,12 +107,12 @@ const FiltersBar = ({ onToggleMap, isMapVisible }: FilterToggleProps) => {
         <div className="space-y-5">
           {/* Location filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Lokalizacja</label>
             <div className="relative">
               <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
               <Input 
                 type="text" 
-                placeholder="Search city or area" 
+                placeholder="Wyszukaj miasto lub obszar" 
                 className="w-full pl-10 pr-4 py-2"
                 value={filters.location || ''}
                 onChange={(e) => updateFilter('location', e.target.value)}
@@ -121,7 +122,7 @@ const FiltersBar = ({ onToggleMap, isMapVisible }: FilterToggleProps) => {
           
           {/* Price Range */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Price Range (PLN)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Zakres cenowy (PLN)</label>
             <div className="flex items-center space-x-2">
               <Input 
                 type="number" 
@@ -143,7 +144,7 @@ const FiltersBar = ({ onToggleMap, isMapVisible }: FilterToggleProps) => {
           
           {/* Ratings */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Rating</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Minimalna ocena</label>
             <div className="flex space-x-2">
               <Button 
                 variant={filters.rating === 3 ? "secondary" : "outline"} 
@@ -171,7 +172,7 @@ const FiltersBar = ({ onToggleMap, isMapVisible }: FilterToggleProps) => {
           
           {/* Services */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Services</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Usługi</label>
             <div className="flex flex-col gap-2">
               {displayedServices.map((service) => (
                 <label key={service.id} className="flex items-center">
@@ -197,7 +198,7 @@ const FiltersBar = ({ onToggleMap, isMapVisible }: FilterToggleProps) => {
               className="text-sm text-primary font-medium mt-2 p-0 h-auto"
               onClick={() => setShowAllServices(!showAllServices)}
             >
-              {showAllServices ? "Show less" : "Show more services"}
+              {showAllServices ? "Pokaż mniej" : "Pokaż więcej usług"}
             </Button>
           </div>
           
@@ -206,7 +207,7 @@ const FiltersBar = ({ onToggleMap, isMapVisible }: FilterToggleProps) => {
             className="w-full bg-primary text-white hover:bg-primary/90 mt-4"
             onClick={applyFilters}
           >
-            Apply Filters
+            Zastosuj filtry
           </Button>
         </div>
       </div>
@@ -228,12 +229,12 @@ const MobileFiltersContent = ({
     <div className="space-y-6">
       {/* Location filter */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Lokalizacja</label>
         <div className="relative">
           <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
           <Input 
             type="text" 
-            placeholder="Search city or area" 
+            placeholder="Wyszukaj miasto lub obszar" 
             className="w-full pl-10 pr-4 py-2"
             value={filters.location || ''}
             onChange={(e) => updateFilter('location', e.target.value)}
@@ -243,7 +244,7 @@ const MobileFiltersContent = ({
       
       {/* Price Range */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Price Range (PLN)</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Zakres cenowy (PLN)</label>
         <div className="flex items-center space-x-2">
           <Input 
             type="number" 
@@ -265,7 +266,7 @@ const MobileFiltersContent = ({
       
       {/* Ratings */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Rating</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Minimalna ocena</label>
         <div className="flex space-x-2">
           <Button 
             variant={filters.rating === 3 ? "secondary" : "outline"} 
@@ -293,7 +294,7 @@ const MobileFiltersContent = ({
       
       {/* Services */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Services</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Usługi</label>
         <div className="space-y-2">
           {displayedServices.map((service: any) => (
             <label key={service.id} className="flex items-center">
@@ -319,7 +320,7 @@ const MobileFiltersContent = ({
           className="text-sm text-primary font-medium mt-2 p-0 h-auto"
           onClick={() => setShowAllServices(!showAllServices)}
         >
-          {showAllServices ? "Show less" : "Show more"}
+          {showAllServices ? "Pokaż mniej" : "Pokaż więcej"}
         </Button>
       </div>
       
@@ -330,7 +331,7 @@ const MobileFiltersContent = ({
           className="w-1/2"
           onClick={resetFilters}
         >
-          Reset
+          Resetuj
         </Button>
         <Button 
           variant="default" 
@@ -342,7 +343,7 @@ const MobileFiltersContent = ({
             );
           }}
         >
-          Apply
+          Zastosuj
         </Button>
       </div>
     </div>

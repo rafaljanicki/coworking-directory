@@ -67,7 +67,8 @@ const mockServices: Service[] = [
   { id: 6, name: "Kitchen", serviceId: "kitchen" },
   { id: 7, name: "Events Space", serviceId: "events_space" },
   { id: 8, name: "Phone Booths", serviceId: "phone_booths" },
-  { id: 9, name: "Parking", serviceId: "parking" }
+  { id: 9, name: "Parking", serviceId: "parking" },
+  { id: 10, name: "Private Desks", serviceId: "private_desks" }
 ];
 
 const mockPackages: PricingPackage[] = [
@@ -100,12 +101,39 @@ const mockPackages: PricingPackage[] = [
   },
   { 
     id: 4, 
+    spaceId: 1, 
+    name: "Private Desk", 
+    description: "Your own private desk in a separated area",
+    price: 1200, 
+    billingPeriod: "month",
+    features: ["24/7 access", "Private desk", "WiFi", "Meeting room credits (10h)", "Kitchen access", "Mail handling", "Locker"]
+  },
+  { 
+    id: 5, 
     spaceId: 2, 
     name: "Day Pass", 
     description: "Access for one day",
     price: 45, 
     billingPeriod: "day",
     features: ["Access to open space", "WiFi", "Coffee & Tea"]
+  },
+  { 
+    id: 6, 
+    spaceId: 2, 
+    name: "Private Desk", 
+    description: "Your own private desk in a separated area",
+    price: 1100, 
+    billingPeriod: "month",
+    features: ["24/7 access", "Private desk", "WiFi", "Meeting room credits (8h)", "Kitchen access", "Mail handling"]
+  },
+  { 
+    id: 7, 
+    spaceId: 3, 
+    name: "Private Desk", 
+    description: "Your own private desk in a separated area",
+    price: 1050, 
+    billingPeriod: "month",
+    features: ["24/7 access", "Private desk", "WiFi", "Meeting room credits (5h)", "Kitchen access"]
   }
 ];
 
@@ -149,8 +177,25 @@ export class MockStorage implements IStorage {
     
     // Add service information to make filtering easier in the UI
     for (const space of filteredSpaces as any[]) {
-      space.services = mockServices.slice(0, Math.floor(Math.random() * mockServices.length) + 3);
-      space.pricingPackages = mockPackages.filter(pkg => pkg.spaceId === space.id);
+      // Get pricing packages for this space
+      const packages = mockPackages.filter(pkg => pkg.spaceId === space.id);
+      space.pricingPackages = packages;
+      
+      // Check if space has private desk option
+      const hasPrivateDesk = packages.some(pkg => pkg.name === "Private Desk");
+      
+      // Get services
+      let services = mockServices.slice(0, Math.floor(Math.random() * (mockServices.length - 1)) + 3);
+      
+      // Add private desk service if the space has private desk package
+      if (hasPrivateDesk) {
+        const privateDesk = mockServices.find(s => s.serviceId === "private_desks");
+        if (privateDesk && !services.some(s => s.id === privateDesk.id)) {
+          services.push(privateDesk);
+        }
+      }
+      
+      space.services = services;
     }
     
     // Filter by services if specified
@@ -168,11 +213,28 @@ export class MockStorage implements IStorage {
     const space = mockSpaces.find(s => s.id === id);
     if (!space) return undefined;
     
+    // Get pricing packages for this space
+    const packages = mockPackages.filter(pkg => pkg.spaceId === id);
+    
+    // Check if space has private desk option
+    const hasPrivateDesk = packages.some(pkg => pkg.name === "Private Desk");
+    
+    // Get services
+    let services = mockServices.slice(0, Math.floor(Math.random() * (mockServices.length - 1)) + 3);
+    
+    // Add private desk service if the space has private desk package
+    if (hasPrivateDesk) {
+      const privateDesk = mockServices.find(s => s.serviceId === "private_desks");
+      if (privateDesk && !services.some(s => s.id === privateDesk.id)) {
+        services.push(privateDesk);
+      }
+    }
+    
     // Add services and pricing packages to the space
     const result = { 
       ...space,
-      services: mockServices.slice(0, Math.floor(Math.random() * mockServices.length) + 3),
-      pricingPackages: mockPackages.filter(pkg => pkg.spaceId === id)
+      services,
+      pricingPackages: packages
     };
     
     return result as any;

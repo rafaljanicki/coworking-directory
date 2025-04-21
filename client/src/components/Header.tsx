@@ -10,12 +10,9 @@ const Header = () => {
     <header className="bg-white shadow-sm sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <div className="flex items-center">
-          <div className="text-2xl font-bold flex items-center">
-            <Link href="/" className="flex items-center">
-              <div className="bg-primary text-white px-3 py-1 rounded">CoWork</div>
-              <div className="bg-red-600 text-white px-3 py-1 rounded-md ml-1">Poland</div>
-            </Link>
-          </div>
+          <Link href="/" className="flex items-center">
+            <img src="/logo.png" alt="Biura Coworking" className="h-12" />
+          </Link>
         </div>
         
         <nav className="hidden md:flex space-x-6 text-sm font-medium">
@@ -25,18 +22,8 @@ const Header = () => {
             </Link>
           </div>
           <div>
-            <Link href="/#about" className="hover:text-primary transition-colors">
-              O nas
-            </Link>
-          </div>
-          <div>
-            <Link href="/#business" className="hover:text-primary transition-colors">
+            <Link href="/dla-wlascicieli" className="hover:text-primary transition-colors">
               Dla Właścicieli
-            </Link>
-          </div>
-          <div>
-            <Link href="/#contact" className="hover:text-primary transition-colors">
-              Kontakt
             </Link>
           </div>
         </nav>
@@ -63,18 +50,8 @@ const Header = () => {
               </Link>
             </div>
             <div>
-              <Link href="/#about" className="text-gray-800 font-medium hover:text-primary py-2 block">
-                O nas
-              </Link>
-            </div>
-            <div>
-              <Link href="/#business" className="text-gray-800 font-medium hover:text-primary py-2 block">
+              <Link href="/dla-wlascicieli" className="text-gray-800 font-medium hover:text-primary py-2 block">
                 Dla Właścicieli
-              </Link>
-            </div>
-            <div>
-              <Link href="/#contact" className="text-gray-800 font-medium hover:text-primary py-2 block">
-                Kontakt
               </Link>
             </div>
           </div>
