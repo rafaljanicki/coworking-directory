@@ -1,3 +1,25 @@
+## 2025-04-21 - Update UI, add "Dla Właścicieli" page and private desks service
+
+Prompt: Could you improve the logo? It's in english and it looks weird. The site's domain is biuracoworking.pl. Also, change the site's title, remove the "O nas" and "Kontakt" tabs. Also, make the filters in polish and the message of "coworking spaces found", make it in polish as well. Make the "Dla wlascicieli" page. Add a service for private desks.
+
+- Replaced text logo with logo.png image to match biuracoworking.pl domain
+- Updated site title to "Biura Coworking - Znajdź Przestrzenie Coworkingowe w Polsce"
+- Removed "O nas" and "Kontakt" tabs from both desktop and mobile navigation
+- Translated all UI elements to Polish:
+  - Filters, buttons, labels, placeholders and sort options
+  - Updated "coworking spaces found" message with proper Polish grammar
+- Created comprehensive "Dla Właścicieli" page with:
+  - Information about promoting coworking spaces
+  - Example of promoted listing with premium features
+  - Pricing packages with different tiers
+  - Contact information (kontakt@biuracoworking.pl)
+- Added "Private Desks" (Biurka prywatne) service:
+  - Added as a filter option in frontend
+  - Added to backend service list with proper ID
+  - Created private desk pricing packages with premium pricing
+  - Updated mock data to automatically assign service to relevant spaces
+- References: client/src/components/Header.tsx, client/src/components/FiltersBar.tsx, client/src/components/SpacesList.tsx, client/src/pages/ForOwnersPage.tsx, server/mock-storage.ts
+
 ## 2025-04-21 - Refactor backend to use individual Lambda functions
 
 Prompt: I get following error when running the AWS SAM CLI (by running command npm run dev:backend): "Dynamic require of "util" is not supported","stack":["Error: Dynamic require of "util" is not supported","    at file:///var/task/lambda.mjs:12:9"". Could you fix that somehow?
