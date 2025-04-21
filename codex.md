@@ -1,3 +1,0 @@
-- Always review Readme file after changes. Reduce scope of the review only to the changes performed. Do that only once you've completed all your changes
-- While you work on the project, create dated files such as .codex/plan_2025-04-18-0800.md containing your planned milestones, and update these documents as you progress through the task. 
-- For significant pieces of completed work, update the CHANGELOG.md with a dated changelog. Please start the changelog with the input prompt then followed by each functionality introduced and reference the relevant documentation
