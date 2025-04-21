@@ -10,7 +10,7 @@
 - **Dependencies Added**: react-helmet-async, vite-plugin-image-optimizer
 
 # Workflow
-- At the start, run both frontend and backend in the background. Frontend is accessible at http://localhost:8080 and backend at http://localhost:3000
+- At the start, run both frontend and backend in the background. Frontend is accessible at http://localhost:5173 and backend at http://localhost:3000
 - IMPORTANT: At the end, run `npm run stop` to stop both services
 - Every API code change, stop the backend, build it and start again
 - Always review Readme file after changes. Reduce scope of the review only to the changes performed. Do that only once you've completed all your changes
@@ -55,12 +55,3 @@
 - **client/**: Frontend React application
 - **server/**: Backend serverless application
 - **shared/**: Code shared between frontend and backend (schemas, types)
-
-## SEO Status
-- ✅ Added meta description and keywords tags
-- ✅ Created sitemap.xml and robots.txt files
-- ✅ Implemented structured data (JSON-LD) via react-helmet-async
-- ✅ Enhanced semantic HTML with schema.org markup
-- ✅ Added image optimization with vite-plugin-image-optimizer
-- ✅ Implemented SEO library (react-helmet-async)
-- ✅ Localized content to Polish language for better regional targeting

@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: AWS SAM template to deploy the coworking backend as a Lambda behind API Gateway.
+Description: AWS SAM template to deploy the coworking backend as separate Lambda functions.
 
 Globals:
   Function:
@@ -9,7 +9,13 @@ Globals:
     Timeout: 30
     Environment:
       Variables:
-        NODE_ENV: production
+        NODE_ENV: !Ref Environment
+        NODE_OPTIONS: --enable-source-maps
+        COWORKING_SPACES_TABLE: !Ref CoworkingSpacesTable
+        SERVICES_TABLE: !Ref ServicesTable
+        SPACE_SERVICES_TABLE: !Ref SpaceServicesTable
+        PRICING_PACKAGES_TABLE: !Ref PricingPackagesTable
+        REPORTS_TABLE: !Ref ReportsTable
   Api:
     Cors:
       AllowOrigin: "'*'"
@@ -29,99 +35,12 @@ Parameters:
     Type: String
     Default: local-development-api-key-123
     Description: Value for the API key (only for local development, will be auto-generated in production)
+  Environment:
+    Type: String
+    Description: Name of the current environment
+    Default: production
 
 Resources:
-  ApiFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: server/lambda.handler
-      CodeUri: .
-      Description: Backend API for coworking spaces
-      Events:
-        # Root path for health check
-        ApiRoot:
-          Type: Api
-          Properties:
-            Path: /
-            Method: GET
-            Auth:
-              ApiKeyRequired: true
-        # Explicit route for spaces endpoint
-        ApiSpaces:
-          Type: Api
-          Properties:
-            Path: /spaces
-            Method: ANY
-            Auth:
-              ApiKeyRequired: true
-        # Spaces by ID endpoint
-        ApiSpacesById:
-          Type: Api
-          Properties:
-            Path: /spaces/{id}
-            Method: ANY
-            Auth:
-              ApiKeyRequired: true
-        # Services endpoint
-        ApiServices:
-          Type: Api
-          Properties:
-            Path: /services
-            Method: ANY
-            Auth:
-              ApiKeyRequired: true
-        # Space services endpoint
-        ApiSpaceServices:
-          Type: Api
-          Properties:
-            Path: /spaces/{id}/services
-            Method: ANY
-            Auth:
-              ApiKeyRequired: true
-        # Space pricing endpoint
-        ApiSpacePricing:
-          Type: Api
-          Properties:
-            Path: /spaces/{id}/pricing
-            Method: ANY
-            Auth:
-              ApiKeyRequired: true
-        # Reports endpoint
-        ApiReports:
-          Type: Api
-          Properties:
-            Path: /reports
-            Method: ANY
-            Auth:
-              ApiKeyRequired: true
-        # Legacy proxy path for backward compatibility
-        ApiProxy:
-          Type: Api
-          Properties:
-            Path: /{proxy+}
-            Method: ANY
-            Auth:
-              ApiKeyRequired: true
-      Environment:
-        Variables:
-          NODE_OPTIONS: --enable-source-maps
-          NODE_ENV: production
-          COWORKING_SPACES_TABLE: !Ref CoworkingSpacesTable
-          SERVICES_TABLE: !Ref ServicesTable
-          SPACE_SERVICES_TABLE: !Ref SpaceServicesTable
-          PRICING_PACKAGES_TABLE: !Ref PricingPackagesTable
-          REPORTS_TABLE: !Ref ReportsTable
-
-    Metadata:
-      BuildMethod: esbuild
-      BuildProperties:
-        Format: esm
-        Minify: false
-        OutExtension:
-          - .js=.mjs
-        Target: "es2020"
-        Sourcemap: true
-
   # DynamoDB tables
   CoworkingSpacesTable:
     Type: AWS::Serverless::SimpleTable
@@ -158,6 +77,225 @@ Resources:
         Name: id
         Type: Number
 
+  # Lambda Functions for each endpoint
+  HealthCheckFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: server/lambda.healthCheck
+      CodeUri: .
+      Description: Health check endpoint
+      Events:
+        RootApi:
+          Type: Api
+          Properties:
+            Path: /
+            Method: GET
+            Auth:
+              ApiKeyRequired: true
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Format: esm
+        Minify: false
+        OutExtension:
+          - .js=.mjs
+        Target: "es2020"
+        Sourcemap: true
+
+  SpacesListFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: server/lambda.getSpaces
+      CodeUri: .
+      Description: Get all coworking spaces with optional filtering
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /spaces
+            Method: GET
+            Auth:
+              ApiKeyRequired: true
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Format: esm
+        Minify: false
+        OutExtension:
+          - .js=.mjs
+        Target: "es2020"
+        Sourcemap: true
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
+
+  SpaceByIdFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: server/lambda.getSpaceById
+      CodeUri: .
+      Description: Get a specific coworking space by ID
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /spaces/{id}
+            Method: GET
+            Auth:
+              ApiKeyRequired: true
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Format: esm
+        Minify: false
+        OutExtension:
+          - .js=.mjs
+        Target: "es2020"
+        Sourcemap: true
+
+  ServicesListFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: server/lambda.getServices
+      CodeUri: .
+      Description: Get all services
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /services
+            Method: GET
+            Auth:
+              ApiKeyRequired: true
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Format: esm
+        Minify: false
+        OutExtension:
+          - .js=.mjs
+        Target: "es2020"
+        Sourcemap: true
+
+  SpaceServicesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: server/lambda.getSpaceServices
+      CodeUri: .
+      Description: Get services for a specific coworking space
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /spaces/{id}/services
+            Method: GET
+            Auth:
+              ApiKeyRequired: true
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Format: esm
+        Minify: false
+        OutExtension:
+          - .js=.mjs
+        Target: "es2020"
+        Sourcemap: true
+
+  SpacePricingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: server/lambda.getSpacePricing
+      CodeUri: .
+      Description: Get pricing for a specific coworking space
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /spaces/{id}/pricing
+            Method: GET
+            Auth:
+              ApiKeyRequired: true
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Format: esm
+        Minify: false
+        OutExtension:
+          - .js=.mjs
+        Target: "es2020"
+        Sourcemap: true
+
+  CreateReportFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: server/lambda.createReport
+      CodeUri: .
+      Description: Submit a report for a coworking space
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /reports
+            Method: POST
+            Auth:
+              ApiKeyRequired: true
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Format: esm
+        Minify: false
+        OutExtension:
+          - .js=.mjs
+        Target: "es2020"
+        Sourcemap: true
+
+  OptionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: server/lambda.handleOptions
+      CodeUri: .
+      Description: Handle OPTIONS requests for CORS
+      Events:
+        SpacesOptions:
+          Type: Api
+          Properties:
+            Path: /spaces
+            Method: OPTIONS
+        SpaceByIdOptions:
+          Type: Api
+          Properties:
+            Path: /spaces/{id}
+            Method: OPTIONS
+        ServicesOptions:
+          Type: Api
+          Properties:
+            Path: /services
+            Method: OPTIONS
+        SpaceServicesOptions:
+          Type: Api
+          Properties:
+            Path: /spaces/{id}/services
+            Method: OPTIONS
+        SpacePricingOptions:
+          Type: Api
+          Properties:
+            Path: /spaces/{id}/pricing
+            Method: OPTIONS
+        ReportsOptions:
+          Type: Api
+          Properties:
+            Path: /reports
+            Method: OPTIONS
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Format: esm
+        Minify: false
+        OutExtension:
+          - .js=.mjs
+        Target: "es2020"
+        Sourcemap: true
+
+  # API Gateway resources
   ApiGatewayApiKey:
     Type: AWS::ApiGateway::ApiKey
     Properties:
