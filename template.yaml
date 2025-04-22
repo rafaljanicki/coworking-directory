@@ -51,7 +51,6 @@ Resources:
         Name: id
         Type: Number
 
-  # SpaceServicesTable is no longer needed as service IDs are stored directly in the space record
 
   PricingPackagesTable:
     Type: AWS::Serverless::SimpleTable
@@ -106,8 +105,6 @@ Resources:
         - DynamoDBCrudPolicy:
             TableName: !Ref ServicesTable
         - DynamoDBCrudPolicy:
-            TableName: !Ref SpaceServicesTable
-        - DynamoDBCrudPolicy:
             TableName: !Ref PricingPackagesTable
       Events:
         Api:
@@ -140,8 +137,6 @@ Resources:
             TableName: !Ref CoworkingSpacesTable
         - DynamoDBCrudPolicy:
             TableName: !Ref ServicesTable
-        - DynamoDBCrudPolicy:
-            TableName: !Ref SpaceServicesTable
         - DynamoDBCrudPolicy:
             TableName: !Ref PricingPackagesTable
       Events:
@@ -204,8 +199,6 @@ Resources:
             TableName: !Ref CoworkingSpacesTable
         - DynamoDBCrudPolicy:
             TableName: !Ref ServicesTable
-        - DynamoDBCrudPolicy:
-            TableName: !Ref SpaceServicesTable
       Events:
         Api:
           Type: Api
