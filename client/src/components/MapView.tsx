@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useMemo } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import L from "leaflet";
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from "react-leaflet";
 import "leaflet.markercluster";
@@ -39,10 +39,14 @@ const MapEventHandler = ({ onBoundsChange }: { onBoundsChange: (bounds: L.LatLng
 };
 
 // Marker cluster component
-const MarkerClusterGroup = ({ children, onMarkerClick }: { children: React.ReactNode, onMarkerClick: (id: number) => void }) => {
+const MarkerClusterGroup = ({ markers, onMarkerClick }: { 
+  markers: Array<{id: number, name: string, position: [number, number]}>, 
+  onMarkerClick: (id: number) => void 
+}) => {
   const map = useMap();
   const clusterGroupRef = useRef<L.MarkerClusterGroup | null>(null);
   
+  // Initialize cluster group
   useEffect(() => {
     // Create marker cluster group
     if (!clusterGroupRef.current) {
@@ -66,59 +70,45 @@ const MarkerClusterGroup = ({ children, onMarkerClick }: { children: React.React
     };
   }, [map]);
   
-  // Add markers to the cluster group
+  // Update markers when they change
   useEffect(() => {
     if (!clusterGroupRef.current) return;
     
     // Clear existing markers
     clusterGroupRef.current.clearLayers();
     
-    // Add new markers from children
-    const layers: L.Layer[] = [];
-    
-    React.Children.forEach(children, (child: any) => {
-      if (!child) return;
+    // Add new markers from the markers array
+    const layers: L.Layer[] = markers.map(marker => {
+      const { id, name, position } = marker;
       
-      const { position, properties } = child.props;
-      if (!position) return;
+      const leafletMarker = L.marker(position);
       
-      const marker = L.marker(position);
+      // Create popup content
+      const popupContent = document.createElement('div');
+      popupContent.className = 'text-center';
       
-      if (properties) {
-        const { id, name } = properties;
-        
-        // Create popup content
-        const popupContent = document.createElement('div');
-        popupContent.className = 'text-center';
-        
-        const title = document.createElement('h3');
-        title.className = 'font-semibold';
-        title.textContent = name;
-        popupContent.appendChild(title);
-        
-        const button = document.createElement('button');
-        button.className = 'mt-2 text-xs bg-blue-500 text-white px-2 py-1 rounded';
-        button.textContent = 'Szczegóły';
-        button.onclick = () => onMarkerClick(id);
-        popupContent.appendChild(button);
-        
-        marker.bindPopup(popupContent);
-      }
+      const title = document.createElement('h3');
+      title.className = 'font-semibold';
+      title.textContent = name;
+      popupContent.appendChild(title);
       
-      layers.push(marker);
+      const button = document.createElement('button');
+      button.className = 'mt-2 text-xs bg-blue-500 text-white px-2 py-1 rounded';
+      button.textContent = 'Szczegóły';
+      button.onclick = () => onMarkerClick(id);
+      popupContent.appendChild(button);
+      
+      leafletMarker.bindPopup(popupContent);
+      
+      return leafletMarker;
     });
     
     if (layers.length > 0) {
       clusterGroupRef.current.addLayers(layers);
     }
-  }, [children, onMarkerClick]);
+  }, [markers, onMarkerClick]);
   
   return null;
-};
-
-// Custom marker component
-const ClusterMarker = ({ position, properties }: { position: [number, number], properties: { id: number, name: string } }) => {
-  return null; // This is just a data holder, actual markers are created in MarkerClusterGroup
 };
 
 const MapView = ({ onMarkerClick, expanded = false, onToggleExpand }: MapViewProps) => {
@@ -168,29 +158,26 @@ const MapView = ({ onMarkerClick, expanded = false, onToggleExpand }: MapViewPro
         <MapEventHandler onBoundsChange={handleBoundsChange} />
         
         {/* Marker cluster group */}
-        <MarkerClusterGroup onMarkerClick={onMarkerClick}>
-          {spaces?.map((space) => {
-            // Skip spaces without coordinates
-            if (!space.latitude || !space.longitude) return null;
-            
-            const lat = typeof space.latitude === 'string' ? parseFloat(space.latitude) : space.latitude;
-            const lng = typeof space.longitude === 'string' ? parseFloat(space.longitude) : space.longitude;
-            
-            // Skip invalid coordinates
-            if (isNaN(lat) || isNaN(lng)) return null;
-            
-            return (
-              <ClusterMarker 
-                key={space.id} 
-                position={[lat, lng]}
-                properties={{
-                  id: space.id,
-                  name: space.name
-                }}
-              />
-            );
-          })}
-        </MarkerClusterGroup>
+        <MarkerClusterGroup 
+          markers={spaces
+            .filter(space => space.latitude && space.longitude)
+            .map(space => {
+              const lat = typeof space.latitude === 'string' ? parseFloat(space.latitude) : space.latitude;
+              const lng = typeof space.longitude === 'string' ? parseFloat(space.longitude) : space.longitude;
+              
+              // Skip invalid coordinates
+              if (isNaN(lat) || isNaN(lng)) return null;
+              
+              return {
+                id: space.id,
+                name: space.name,
+                position: [lat, lng] as [number, number]
+              };
+            })
+            .filter(Boolean) as Array<{id: number, name: string, position: [number, number]}>
+          }
+          onMarkerClick={onMarkerClick}
+        />
       </MapContainer>
     </div>
   );
