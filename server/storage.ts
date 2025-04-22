@@ -35,8 +35,8 @@ export interface IStorage {
   createService(service: InsertService): Promise<Service>;
   
   // Space Service management
-  addServiceToSpace(spaceId: number, serviceId: number): Promise<boolean>;
-  removeServiceFromSpace(spaceId: number, serviceId: number): Promise<boolean>;
+  addServiceToSpace(spaceId: number, serviceStringId: string): Promise<boolean>;
+  removeServiceFromSpace(spaceId: number, serviceStringId: string): Promise<boolean>;
   
   // Pricing Packages
   getPricingPackagesBySpaceId(spaceId: number): Promise<PricingPackage[]>;
@@ -101,7 +101,7 @@ export class DynamoStorage implements IStorage {
   
   async getServicesBySpaceId(spaceId: number): Promise<Service[]> {
     try {
-      // 1. Get the space with its service IDs
+      // 1. Get the space with its service string IDs
       const space = await this.getSpaceById(spaceId);
       if (!space || !space.serviceIds || space.serviceIds.length === 0) {
         return [];
@@ -110,9 +110,9 @@ export class DynamoStorage implements IStorage {
       // 2. Get all services
       const allServices = await this.getServices();
       
-      // 3. Filter services by the IDs stored in the space
+      // 3. Filter services by the string IDs stored in the space
       return allServices.filter(service => 
-        space.serviceIds!.includes(service.id)
+        space.serviceIds!.includes(service.serviceId || '')
       );
     } catch (error) {
       console.error(`DynamoDB error in getServicesBySpaceId(${spaceId}):`, error);
@@ -124,8 +124,8 @@ export class DynamoStorage implements IStorage {
     throw new Error("createService not implemented in DynamoStorage");
   }
   
-  // Simplified space-service management using denormalized approach
-  async addServiceToSpace(spaceId: number, serviceId: number): Promise<boolean> {
+  // Simplified space-service management using denormalized approach with string IDs
+  async addServiceToSpace(spaceId: number, serviceStringId: string): Promise<boolean> {
     try {
       // 1. Get the space
       const space = await this.getSpaceById(spaceId);
@@ -137,12 +137,12 @@ export class DynamoStorage implements IStorage {
       const serviceIds = space.serviceIds || [];
       
       // 3. Check if service is already associated
-      if (serviceIds.includes(serviceId)) {
+      if (serviceIds.includes(serviceStringId)) {
         return true; // Already exists
       }
       
-      // 4. Add the service ID to the array
-      serviceIds.push(serviceId);
+      // 4. Add the service string ID to the array
+      serviceIds.push(serviceStringId);
       
       // 5. Update the space with the new serviceIds array
       await this.client.update({
@@ -157,12 +157,12 @@ export class DynamoStorage implements IStorage {
       
       return true;
     } catch (error) {
-      console.error(`DynamoDB error in addServiceToSpace(${spaceId}, ${serviceId}):`, error);
-      throw new Error(`Failed to add service ${serviceId} to space ${spaceId}`);
+      console.error(`DynamoDB error in addServiceToSpace(${spaceId}, ${serviceStringId}):`, error);
+      throw new Error(`Failed to add service ${serviceStringId} to space ${spaceId}`);
     }
   }
   
-  async removeServiceFromSpace(spaceId: number, serviceId: number): Promise<boolean> {
+  async removeServiceFromSpace(spaceId: number, serviceStringId: string): Promise<boolean> {
     try {
       // 1. Get the space
       const space = await this.getSpaceById(spaceId);
@@ -171,12 +171,12 @@ export class DynamoStorage implements IStorage {
       }
       
       // 2. Check if the service is associated
-      if (!space.serviceIds.includes(serviceId)) {
+      if (!space.serviceIds.includes(serviceStringId)) {
         return false; // Service not found
       }
       
-      // 3. Remove the service ID from the array
-      const updatedServiceIds = space.serviceIds.filter(id => id !== serviceId);
+      // 3. Remove the service string ID from the array
+      const updatedServiceIds = space.serviceIds.filter(id => id !== serviceStringId);
       
       // 4. Update the space with the filtered serviceIds array
       await this.client.update({
@@ -191,8 +191,8 @@ export class DynamoStorage implements IStorage {
       
       return true;
     } catch (error) {
-      console.error(`DynamoDB error in removeServiceFromSpace(${spaceId}, ${serviceId}):`, error);
-      throw new Error(`Failed to remove service ${serviceId} from space ${spaceId}`);
+      console.error(`DynamoDB error in removeServiceFromSpace(${spaceId}, ${serviceStringId}):`, error);
+      throw new Error(`Failed to remove service ${serviceStringId} from space ${spaceId}`);
     }
   }
   

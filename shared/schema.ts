@@ -16,10 +16,8 @@ export const coworkingSpaceSchema = z.object({
   email: z.string().optional(),                                                                                                                                                                         
   website: z.string().optional(),                                                                                                                                                                       
   locationDescription: z.string().optional(),
-  // Services as an array of service IDs directly on the space record
-  serviceIds: z.array(z.number()).optional(),
-  // Maps service IDs to string IDs for filtering
-  serviceIdMapping: z.record(z.string(), z.number()).optional(),
+  // Services as an array of service string IDs directly on the space record (e.g., 'wifi', 'printing', etc.)
+  serviceIds: z.array(z.string()).optional(),
   createdAt: z.union([z.number(), z.date()]),                                                                                                                                                           
   updatedAt: z.union([z.number(), z.date()]),                                                                                                                                                           
 });                                                                                                                                                                                                     

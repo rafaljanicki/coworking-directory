@@ -142,10 +142,10 @@ const mockPackages: PricingPackage[] = [
 const mockReports: Report[] = [];
 
 // Mock space-service associations
-// Initialize the spaces with serviceIds
-mockSpaces[0].serviceIds = [1, 2, 4, 10]; // Space 1 has services 1, 2, 4, 10
-mockSpaces[1].serviceIds = [2, 3, 5];    // Space 2 has services 2, 3, 5
-mockSpaces[2].serviceIds = [2, 5, 7];    // Space 3 has services 2, 5, 7
+// Initialize the spaces with service string IDs
+mockSpaces[0].serviceIds = ["24_7_access", "wifi", "coffee_tea", "private_desks"]; // Space 1 
+mockSpaces[1].serviceIds = ["wifi", "meeting_rooms", "printing"];                 // Space 2
+mockSpaces[2].serviceIds = ["wifi", "printing", "events_space"];                  // Space 3
 
 // Mock implementation of IStorage for development
 export class MockStorage implements IStorage {
@@ -191,26 +191,28 @@ export class MockStorage implements IStorage {
       
       // Get services based on serviceIds array
       if (space.serviceIds && space.serviceIds.length > 0) {
-        space.services = mockServices.filter(service => space.serviceIds.includes(service.id));
+        space.services = mockServices.filter(service => 
+          space.serviceIds.includes(service.serviceId || '')
+        );
       } else {
         // If no services are associated, add some default services including private desk if applicable
         const hasPrivateDesk = packages.some(pkg => pkg.name === "Private Desk");
         
-        // Get some default services
-        let services = mockServices.slice(0, Math.floor(Math.random() * (mockServices.length - 1)) + 3);
+        // Get some default services with string IDs
+        let serviceStringIds: string[] = ["wifi", "coffee_tea", "printing"];
         
         // Add private desk service if the space has private desk package
         if (hasPrivateDesk) {
-          const privateDesk = mockServices.find(s => s.serviceId === "private_desks");
-          if (privateDesk && !services.some(s => s.id === privateDesk.id)) {
-            services.push(privateDesk);
-          }
+          serviceStringIds.push("private_desks");
         }
         
-        space.services = services;
+        // Get the actual service objects
+        space.services = mockServices.filter(service => 
+          service.serviceId && serviceStringIds.includes(service.serviceId)
+        );
         
         // Initialize serviceIds array and populate it
-        space.serviceIds = services.map(s => s.id);
+        space.serviceIds = serviceStringIds;
       }
     }
     
@@ -235,24 +237,28 @@ export class MockStorage implements IStorage {
     // Get services based on serviceIds array
     let services: Service[] = [];
     if (space.serviceIds && space.serviceIds.length > 0) {
-      services = mockServices.filter(service => space.serviceIds!.includes(service.id));
+      services = mockServices.filter(service => 
+        space.serviceIds!.includes(service.serviceId || '')
+      );
     } else {
       // If no services are associated, add some default services including private desk if applicable
       const hasPrivateDesk = packages.some(pkg => pkg.name === "Private Desk");
       
-      // Get some default services
-      services = mockServices.slice(0, Math.floor(Math.random() * (mockServices.length - 1)) + 3);
+      // Get some default services with string IDs
+      let serviceStringIds: string[] = ["wifi", "coffee_tea", "printing"];
       
       // Add private desk service if the space has private desk package
       if (hasPrivateDesk) {
-        const privateDesk = mockServices.find(s => s.serviceId === "private_desks");
-        if (privateDesk && !services.some(s => s.id === privateDesk.id)) {
-          services.push(privateDesk);
-        }
+        serviceStringIds.push("private_desks");
       }
       
+      // Get the actual service objects
+      services = mockServices.filter(service => 
+        service.serviceId && serviceStringIds.includes(service.serviceId)
+      );
+      
       // Initialize serviceIds array and populate it
-      space.serviceIds = services.map(s => s.id);
+      space.serviceIds = serviceStringIds;
     }
     
     // Add services and pricing packages to the space
@@ -307,8 +313,8 @@ export class MockStorage implements IStorage {
       return [];
     }
     
-    // Return services with matching IDs
-    return mockServices.filter(service => space.serviceIds!.includes(service.id));
+    // Return services with matching string IDs
+    return mockServices.filter(service => space.serviceIds!.includes(service.serviceId || ''));
   }
   
   async createService(service: InsertService): Promise<Service> {
@@ -318,8 +324,8 @@ export class MockStorage implements IStorage {
     return newService;
   }
   
-  // Simplified Space-Service management
-  async addServiceToSpace(spaceId: number, serviceId: number): Promise<boolean> {
+  // Simplified Space-Service management with string IDs
+  async addServiceToSpace(spaceId: number, serviceStringId: string): Promise<boolean> {
     // Find the space
     const space = mockSpaces.find(s => s.id === spaceId);
     if (!space) {
@@ -332,18 +338,18 @@ export class MockStorage implements IStorage {
     }
     
     // Check if service is already associated
-    if (space.serviceIds.includes(serviceId)) {
+    if (space.serviceIds.includes(serviceStringId)) {
       return true; // Already exists
     }
     
-    // Add the service ID to the array
-    space.serviceIds.push(serviceId);
+    // Add the service string ID to the array
+    space.serviceIds.push(serviceStringId);
     space.updatedAt = Date.now();
     
     return true;
   }
   
-  async removeServiceFromSpace(spaceId: number, serviceId: number): Promise<boolean> {
+  async removeServiceFromSpace(spaceId: number, serviceStringId: string): Promise<boolean> {
     // Find the space
     const space = mockSpaces.find(s => s.id === spaceId);
     if (!space || !space.serviceIds) {
@@ -351,12 +357,12 @@ export class MockStorage implements IStorage {
     }
     
     // Check if service is associated
-    if (!space.serviceIds.includes(serviceId)) {
+    if (!space.serviceIds.includes(serviceStringId)) {
       return false; // Service not found
     }
     
-    // Remove the service ID from the array
-    space.serviceIds = space.serviceIds.filter(id => id !== serviceId);
+    // Remove the service string ID from the array
+    space.serviceIds = space.serviceIds.filter(id => id !== serviceStringId);
     space.updatedAt = Date.now();
     
     return true;
