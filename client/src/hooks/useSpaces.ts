@@ -9,6 +9,8 @@ export const useSpaces = () => {
   const { activeFilters } = useFilters();
   const [spaces, setSpaces] = useState<CoworkingSpace[]>([]);
   const [totalSpaces, setTotalSpaces] = useState(0);
+  const [visibleSpaces, setVisibleSpaces] = useState<CoworkingSpace[]>([]);
+  const [mapBounds, setMapBounds] = useState<any>(null);
   
   // Build query string from filters
   const getQueryString = () => {
@@ -30,7 +32,7 @@ export const useSpaces = () => {
       params.append('rating', activeFilters.rating.toString());
     }
     
-    if (activeFilters.services.length > 0) {
+    if (activeFilters.services && activeFilters.services.length > 0) {
       activeFilters.services.forEach(service => {
         params.append('services', service);
       });
@@ -40,29 +42,78 @@ export const useSpaces = () => {
   };
   
   // Fetch the spaces based on filters
-  const endpoint = `${API_BASE_URL}/spaces`;
   const { data, isLoading, error } = useQuery({
-    queryKey: [endpoint, activeFilters],
+    queryKey: ['spaces', activeFilters],
     queryFn: async () => {
       const queryString = getQueryString();
-      const url = `${endpoint}${queryString ? `?${queryString}` : ''}`;
+      const url = `${API_BASE_URL}/spaces${queryString ? `?${queryString}` : ''}`;
+      
       // Include API key header if provided
       const headers: Record<string, string> = {};
       if (API_KEY) {
         headers['x-api-key'] = API_KEY;
       }
+      
+      console.log("Fetching from URL:", url);
       const res = await fetch(url, { headers });
+      
+      if (!res.ok) {
+        throw new Error(`API request failed with status ${res.status}`);
+      }
+      
       return res.json();
     },
+    // Disable automatic refetching based on window focus
+    refetchOnWindowFocus: false,
   });
   
   // Update spaces when data changes
   useEffect(() => {
     if (data) {
-      setSpaces(data.spaces);
-      setTotalSpaces(data.total);
+      console.log("API response:", data);
+      if (Array.isArray(data)) {
+        setSpaces(data);
+        setTotalSpaces(data.length);
+      } else if (data.spaces) {
+        setSpaces(data.spaces);
+        setTotalSpaces(data.total || data.spaces.length);
+      } else {
+        console.error("Unexpected API response format:", data);
+        setSpaces([]);
+        setTotalSpaces(0);
+      }
     }
   }, [data]);
+  
+  // Filter spaces based on map bounds
+  useEffect(() => {
+    if (!mapBounds || !spaces.length) {
+      setVisibleSpaces(spaces);
+      return;
+    }
+    
+    const visible = spaces.filter(space => {
+      // Skip spaces without valid coordinates
+      if (!space.latitude || !space.longitude) return false;
+      
+      const lat = typeof space.latitude === 'string' ? parseFloat(space.latitude) : space.latitude;
+      const lng = typeof space.longitude === 'string' ? parseFloat(space.longitude) : space.longitude;
+      
+      return (
+        lat >= mapBounds.getSouth() && 
+        lat <= mapBounds.getNorth() && 
+        lng >= mapBounds.getWest() && 
+        lng <= mapBounds.getEast()
+      );
+    });
+    
+    setVisibleSpaces(visible);
+  }, [spaces, mapBounds]);
+  
+  // Update map bounds when they change
+  const updateMapBounds = useCallback((bounds: any) => {
+    setMapBounds(bounds);
+  }, []);
   
   // Get a specific space by ID
   const getSpaceById = useCallback((id: number): CompleteSpace | null => {
@@ -72,9 +123,11 @@ export const useSpaces = () => {
   
   return { 
     spaces, 
+    visibleSpaces,
     totalSpaces, 
     loading: isLoading, 
     error,
-    getSpaceById
+    getSpaceById,
+    updateMapBounds
   };
 };

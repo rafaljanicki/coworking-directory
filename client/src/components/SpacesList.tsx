@@ -9,11 +9,19 @@ interface SpacesListProps {
 }
 
 const SpacesList = ({ onSpaceClick }: SpacesListProps) => {
-  const { spaces, totalSpaces, loading } = useSpaces();
+  const { spaces, visibleSpaces, totalSpaces, loading, error } = useSpaces();
   const [sortMethod, setSortMethod] = useState<string>("recommended");
   
+  // Determine which spaces to display - use visibleSpaces if filtered by map, otherwise use all spaces
+  const displayedSpaces = visibleSpaces || spaces;
+  
+  // Log API errors to help with debugging
+  if (error) {
+    console.error("API error:", error);
+  }
+  
   // Sorted spaces based on selected sort method
-  const sortedSpaces = spaces ? [...spaces].sort((a, b) => {
+  const sortedSpaces = displayedSpaces ? [...displayedSpaces].sort((a, b) => {
     switch (sortMethod) {
       case "price-low":
         const aMinPrice = Math.min(...(a.pricingPackages?.map(p => p.price) || [Infinity]));
