@@ -15,7 +15,11 @@ export const coworkingSpaceSchema = z.object({
   phone: z.string().optional(),                                                                                                                                                                         
   email: z.string().optional(),                                                                                                                                                                         
   website: z.string().optional(),                                                                                                                                                                       
-  locationDescription: z.string().optional(),                                                                                                                                                           
+  locationDescription: z.string().optional(),
+  // Services as an array of service IDs directly on the space record
+  serviceIds: z.array(z.number()).optional(),
+  // Maps service IDs to string IDs for filtering
+  serviceIdMapping: z.record(z.string(), z.number()).optional(),
   createdAt: z.union([z.number(), z.date()]),                                                                                                                                                           
   updatedAt: z.union([z.number(), z.date()]),                                                                                                                                                           
 });                                                                                                                                                                                                     
@@ -75,6 +79,17 @@ export const insertReportSchema = reportSchema.omit({
   updatedAt: true,                                                                                                                                                                                      
 });                                                                                                                                                                                                     
                                                                                                                                                                                                         
+// SpaceService entity - for junction table between spaces and services
+export const spaceServiceSchema = z.object({
+  id: z.number(),
+  spaceId: z.number(),
+  serviceId: z.number(),
+  createdAt: z.union([z.number(), z.date()]).optional(),
+});
+
+// Schema for creating a new SpaceService
+export const insertSpaceServiceSchema = spaceServiceSchema.omit({ id: true });
+
 // TypeScript types                                                                                                                                                                                     
 export type CoworkingSpace = z.infer<typeof coworkingSpaceSchema>;                                                                                                                                      
 export type InsertCoworkingSpace = z.infer<typeof insertCoworkingSpaceSchema>;                                                                                                                          
@@ -85,5 +100,8 @@ export type InsertService = z.infer<typeof insertServiceSchema>;
 export type PricingPackage = z.infer<typeof pricingPackageSchema>;                                                                                                                                      
 export type InsertPricingPackage = z.infer<typeof insertPricingPackageSchema>;                                                                                                                          
                                                                                                                                                                                                         
+export type SpaceService = z.infer<typeof spaceServiceSchema>;
+export type InsertSpaceService = z.infer<typeof insertSpaceServiceSchema>;
+
 export type Report = z.infer<typeof reportSchema>;                                                                                                                                                      
 export type InsertReport = z.infer<typeof insertReportSchema>;

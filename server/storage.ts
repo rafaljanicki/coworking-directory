@@ -6,7 +6,9 @@ import {
   PricingPackage,
   InsertPricingPackage,
   Report,
-  InsertReport 
+  InsertReport,
+  SpaceService,
+  InsertSpaceService
 } from "@shared/schema";
 import AWS from "aws-sdk";
 import { MockStorage } from "./mock-storage";
@@ -32,6 +34,10 @@ export interface IStorage {
   getServicesBySpaceId(spaceId: number): Promise<Service[]>;
   createService(service: InsertService): Promise<Service>;
   
+  // Space Service management
+  addServiceToSpace(spaceId: number, serviceId: number): Promise<boolean>;
+  removeServiceFromSpace(spaceId: number, serviceId: number): Promise<boolean>;
+  
   // Pricing Packages
   getPricingPackagesBySpaceId(spaceId: number): Promise<PricingPackage[]>;
   createPricingPackage(pkg: InsertPricingPackage): Promise<PricingPackage>;
@@ -48,7 +54,6 @@ export class DynamoStorage implements IStorage {
   private tables = {
     spaces: process.env.COWORKING_SPACES_TABLE!,
     services: process.env.SERVICES_TABLE!,
-    spaceServices: process.env.SPACE_SERVICES_TABLE!,
     pricingPackages: process.env.PRICING_PACKAGES_TABLE!,
     reports: process.env.REPORTS_TABLE!,
   };
@@ -94,13 +99,101 @@ export class DynamoStorage implements IStorage {
     }
   }
   
-  async getServicesBySpaceId(_spaceId: number): Promise<Service[]> {
-    // Simplified: return all services
-    return this.getServices();
+  async getServicesBySpaceId(spaceId: number): Promise<Service[]> {
+    try {
+      // 1. Get the space with its service IDs
+      const space = await this.getSpaceById(spaceId);
+      if (!space || !space.serviceIds || space.serviceIds.length === 0) {
+        return [];
+      }
+      
+      // 2. Get all services
+      const allServices = await this.getServices();
+      
+      // 3. Filter services by the IDs stored in the space
+      return allServices.filter(service => 
+        space.serviceIds!.includes(service.id)
+      );
+    } catch (error) {
+      console.error(`DynamoDB error in getServicesBySpaceId(${spaceId}):`, error);
+      throw new Error(`Failed to fetch services for space ${spaceId} from DynamoDB`);
+    }
   }
   
   async createService(_service: InsertService): Promise<Service> {
     throw new Error("createService not implemented in DynamoStorage");
+  }
+  
+  // Simplified space-service management using denormalized approach
+  async addServiceToSpace(spaceId: number, serviceId: number): Promise<boolean> {
+    try {
+      // 1. Get the space
+      const space = await this.getSpaceById(spaceId);
+      if (!space) {
+        throw new Error(`Space with ID ${spaceId} not found`);
+      }
+      
+      // 2. Initialize serviceIds array if it doesn't exist
+      const serviceIds = space.serviceIds || [];
+      
+      // 3. Check if service is already associated
+      if (serviceIds.includes(serviceId)) {
+        return true; // Already exists
+      }
+      
+      // 4. Add the service ID to the array
+      serviceIds.push(serviceId);
+      
+      // 5. Update the space with the new serviceIds array
+      await this.client.update({
+        TableName: this.tables.spaces,
+        Key: { id: spaceId },
+        UpdateExpression: 'SET serviceIds = :serviceIds, updatedAt = :updatedAt',
+        ExpressionAttributeValues: {
+          ':serviceIds': serviceIds,
+          ':updatedAt': Date.now()
+        }
+      }).promise();
+      
+      return true;
+    } catch (error) {
+      console.error(`DynamoDB error in addServiceToSpace(${spaceId}, ${serviceId}):`, error);
+      throw new Error(`Failed to add service ${serviceId} to space ${spaceId}`);
+    }
+  }
+  
+  async removeServiceFromSpace(spaceId: number, serviceId: number): Promise<boolean> {
+    try {
+      // 1. Get the space
+      const space = await this.getSpaceById(spaceId);
+      if (!space || !space.serviceIds) {
+        return false; // No services to remove
+      }
+      
+      // 2. Check if the service is associated
+      if (!space.serviceIds.includes(serviceId)) {
+        return false; // Service not found
+      }
+      
+      // 3. Remove the service ID from the array
+      const updatedServiceIds = space.serviceIds.filter(id => id !== serviceId);
+      
+      // 4. Update the space with the filtered serviceIds array
+      await this.client.update({
+        TableName: this.tables.spaces,
+        Key: { id: spaceId },
+        UpdateExpression: 'SET serviceIds = :serviceIds, updatedAt = :updatedAt',
+        ExpressionAttributeValues: {
+          ':serviceIds': updatedServiceIds,
+          ':updatedAt': Date.now()
+        }
+      }).promise();
+      
+      return true;
+    } catch (error) {
+      console.error(`DynamoDB error in removeServiceFromSpace(${spaceId}, ${serviceId}):`, error);
+      throw new Error(`Failed to remove service ${serviceId} from space ${spaceId}`);
+    }
   }
   
   async getPricingPackagesBySpaceId(_spaceId: number): Promise<PricingPackage[]> {

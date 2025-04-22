@@ -13,7 +13,6 @@ Globals:
         NODE_OPTIONS: --enable-source-maps
         COWORKING_SPACES_TABLE: !Ref CoworkingSpacesTable
         SERVICES_TABLE: !Ref ServicesTable
-        SPACE_SERVICES_TABLE: !Ref SpaceServicesTable
         PRICING_PACKAGES_TABLE: !Ref PricingPackagesTable
         REPORTS_TABLE: !Ref ReportsTable
   Api:
@@ -52,12 +51,7 @@ Resources:
         Name: id
         Type: Number
 
-  SpaceServicesTable:
-    Type: AWS::Serverless::SimpleTable
-    Properties:
-      PrimaryKey:
-        Name: id
-        Type: Number
+  # SpaceServicesTable is no longer needed as service IDs are stored directly in the space record
 
   PricingPackagesTable:
     Type: AWS::Serverless::SimpleTable
