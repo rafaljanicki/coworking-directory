@@ -1,44 +1,40 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { CoworkingSpace } from '@shared/schema';
 import { useFilters } from '@/hooks/useFilters';
-import { CompleteSpace } from '@/lib/types';
+import { CompleteSpace, FilterState } from '@/lib/types';
 import { API_BASE_URL, API_KEY } from '@/lib/config';
+import type L from 'leaflet';
 
-const PAGE_LIMIT = 10;
-
+// API response type
 interface SpacesApiResponse {
   spaces: CoworkingSpace[];
-  lastKey?: any; // Use any for simplicity if DynamoDB types aren't shared/installed on frontend
 }
 
-export const useSpaces = () => {
-  const { activeFilters } = useFilters();
-  const [visibleSpaces, setVisibleSpaces] = useState<CoworkingSpace[]>([]);
-  const [mapBounds, setMapBounds] = useState<any>(null);
-  
-  // Build query string from filters (excluding pagination)
+export const useSpaces = (activeFilters: FilterState, mapBounds: L.LatLngBounds | null) => {
+  // Build query string for filters
   const getFilterQueryString = () => {
+    const filtersToUse = activeFilters;
     const params = new URLSearchParams();
     
-    if (activeFilters.location) {
-      params.append('location', activeFilters.location);
+    if (filtersToUse.location) {
+      params.append('location', filtersToUse.location);
     }
     
-    if (activeFilters.priceMin) {
-      params.append('priceMin', activeFilters.priceMin.toString());
+    if (filtersToUse.priceMin) {
+      params.append('priceMin', filtersToUse.priceMin.toString());
     }
     
-    if (activeFilters.priceMax) {
-      params.append('priceMax', activeFilters.priceMax.toString());
+    if (filtersToUse.priceMax) {
+      params.append('priceMax', filtersToUse.priceMax.toString());
     }
     
-    if (activeFilters.rating) {
-      params.append('rating', activeFilters.rating.toString());
+    if (filtersToUse.rating) {
+      params.append('rating', filtersToUse.rating.toString());
     }
     
-    if (activeFilters.services && activeFilters.services.length > 0) {
-      activeFilters.services.forEach(service => {
+    if (filtersToUse.services && filtersToUse.services.length > 0) {
+      filtersToUse.services.forEach(service => {
         params.append('services', service);
       });
     }
@@ -46,26 +42,44 @@ export const useSpaces = () => {
     return params.toString();
   };
   
-  // Fetch spaces using infinite query for pagination
+  // Build query string for bounds
+  const getBoundsQueryString = () => {
+    const params = new URLSearchParams();
+    if (mapBounds) {
+      params.append('north', mapBounds.getNorth().toString());
+      params.append('south', mapBounds.getSouth().toString());
+      params.append('east', mapBounds.getEast().toString());
+      params.append('west', mapBounds.getWest().toString());
+    }
+    return params.toString();
+  };
+  
+  // Fetch spaces using useQuery, dependent on filters and bounds
   const { 
-    data, 
+    data: responseData,
     isLoading, 
     error, 
-    fetchNextPage, 
-    hasNextPage, 
-    isFetchingNextPage 
-  } = useInfiniteQuery<SpacesApiResponse, Error>({
-    queryKey: ['spaces', activeFilters], // Query key includes filters
-    queryFn: async ({ pageParam = undefined }) => {
+    refetch
+  } = useQuery<SpacesApiResponse, Error>({
+    // Query key now includes filters AND bounds (use simple string for bounds to ensure stability)
+    queryKey: ['spaces', activeFilters, mapBounds?.toBBoxString()], 
+    queryFn: async () => { 
+      console.log('>>> queryFn running with filters:', JSON.stringify(activeFilters), 'Bounds:', mapBounds?.toBBoxString());
+
+      // Generate query strings
       const filterQueryString = getFilterQueryString();
-      const paginationParams = new URLSearchParams();
-      paginationParams.append('limit', PAGE_LIMIT.toString());
-      if (pageParam) {
-        paginationParams.append('lastKey', JSON.stringify(pageParam));
-      }
-      
-      const queryString = `${filterQueryString ? `&${filterQueryString}` : ''}`;
-      const url = `${API_BASE_URL}/spaces?${paginationParams.toString()}${queryString}`;
+      const boundsQueryString = getBoundsQueryString();
+
+      console.log('>>> filterQueryString generated:', filterQueryString);
+      console.log('>>> boundsQueryString generated:', boundsQueryString);
+
+      // Combine query strings
+      const combinedParams = new URLSearchParams();
+      filterQueryString.split('&').forEach(p => { if(p) combinedParams.append(p.split('=')[0], p.split('=')[1]); });
+      boundsQueryString.split('&').forEach(p => { if(p) combinedParams.append(p.split('=')[0], p.split('=')[1]); });
+      const finalQueryString = combinedParams.toString();
+
+      const url = `${API_BASE_URL}/spaces${finalQueryString ? `?${finalQueryString}` : ''}`;
       
       // Include API key header if provided
       const headers: Record<string, string> = {};
@@ -82,68 +96,18 @@ export const useSpaces = () => {
       
       return res.json();
     },
-    initialPageParam: undefined, // Start with no lastKey
-    getNextPageParam: (lastPage) => {
-      // Return the lastKey from the last fetched page to use as pageParam for the next fetch
-      return lastPage.lastKey;
-    },
-    refetchOnWindowFocus: false, // Optional: keep disabled
+    refetchOnWindowFocus: false, 
+    enabled: !!mapBounds, // Only run query when mapBounds are available
   });
-  
-  // Memoize the flattened list of spaces to prevent unnecessary reference changes
-  const allSpaces = useMemo(() => {
-    return data?.pages.flatMap(page => page.spaces) || [];
-  }, [data?.pages]);
-  
-  // Filter spaces based on map bounds
-  useEffect(() => {
-    if (!mapBounds || !allSpaces.length) {
-      setVisibleSpaces(allSpaces);
-      return;
-    }
-    
-    const visible = allSpaces.filter(space => {
-      // Skip spaces without valid coordinates
-      if (!space.latitude || !space.longitude) return false;
-      
-      const lat = typeof space.latitude === 'string' ? parseFloat(space.latitude) : space.latitude;
-      const lng = typeof space.longitude === 'string' ? parseFloat(space.longitude) : space.longitude;
-      
-      return (
-        lat >= mapBounds.getSouth() && 
-        lat <= mapBounds.getNorth() && 
-        lng >= mapBounds.getWest() && 
-        lng <= mapBounds.getEast()
-      );
-    });
-    
-    setVisibleSpaces(visible);
-  }, [allSpaces, mapBounds]);
-  
-  // Update map bounds when they change
-  const updateMapBounds = useCallback((bounds: any) => {
-    setMapBounds(bounds);
-  }, []);
-  
-  // Get a specific space by ID
-  const getSpaceById = useCallback((id: number): CompleteSpace | null => {
-    const space = allSpaces.find(s => s.id === id);
-    return space ? space as CompleteSpace : null;
-  }, [allSpaces]);
+
+  // Get spaces directly from the response
+  const spaces = responseData?.spaces || [];
   
   return { 
-    // Return all fetched spaces and the visible subset
-    allSpaces, 
-    visibleSpaces,
+    spaces, // Return spaces fetched for current bounds/filters
     // Loading states
-    isLoading, // Initial load 
-    isFetchingNextPage, // Loading next page
+    isLoading, 
     error,
-    // Pagination controls
-    fetchNextPage,
-    hasNextPage, 
-    // Map and detail view functions
-    getSpaceById,
-    updateMapBounds
+    refetch 
   };
 };

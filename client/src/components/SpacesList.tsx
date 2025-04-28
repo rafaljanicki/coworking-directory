@@ -1,24 +1,18 @@
 import { useState } from "react";
-import { useSpaces } from "@/hooks/useSpaces";
+import { CoworkingSpace } from "@shared/schema";
 import SpaceCard from "@/components/SpaceCard";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 
 interface SpacesListProps {
+  spaces: CoworkingSpace[];
+  isLoading: boolean;
+  error: Error | null;
   onSpaceClick: (id: number) => void;
 }
 
-const SpacesList = ({ onSpaceClick }: SpacesListProps) => {
-  const { 
-    allSpaces,
-    isLoading,
-    error, 
-    totalSpaces, 
-    fetchNextPage, 
-    hasNextPage, 
-    isFetchingNextPage
-  } = useSpaces();
+const SpacesList = ({ spaces, isLoading, error, onSpaceClick }: SpacesListProps) => {
   const [sortMethod, setSortMethod] = useState<string>("recommended");
   
   // Log API errors to help with debugging
@@ -27,7 +21,7 @@ const SpacesList = ({ onSpaceClick }: SpacesListProps) => {
   }
   
   // Sorted spaces based on selected sort method
-  const sortedSpaces = allSpaces ? [...allSpaces].sort((a, b) => {
+  const sortedSpaces = spaces ? [...spaces].sort((a, b) => {
     switch (sortMethod) {
       case "price-low":
         const aMinPrice = Math.min(...(a.pricingPackages?.map(p => p.price) || [Infinity]));
@@ -99,10 +93,10 @@ const SpacesList = ({ onSpaceClick }: SpacesListProps) => {
       <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
         <div className="flex justify-between items-center">
           <h2 className="font-semibold text-lg">
-            {/* Display count of currently loaded spaces */}
-            {currentCount} {currentCount === 1 ? 'przestrzeń coworkingowa' : 
-              currentCount > 1 && currentCount < 5 ? 'przestrzenie coworkingowe' : 
-              'przestrzeni coworkingowych'} {isLoading ? '...' : 'znalezionych'}
+            {/* Display count based on filtered results */}
+            {currentCount} {currentCount === 1 ? 'pasująca przestrzeń' : 
+              currentCount > 1 && currentCount < 5 ? 'pasujące przestrzenie' : 
+              'pasujących przestrzeni'}
           </h2>
           <div className="flex items-center">
             <span className="text-sm text-gray-600 mr-2">Sortuj według:</span>
@@ -138,21 +132,6 @@ const SpacesList = ({ onSpaceClick }: SpacesListProps) => {
             onClick={() => onSpaceClick(space.id)}
           />
         ))
-      )}
-      
-      {/* Load More Button */}
-      {hasNextPage && (
-        <div className="mt-6 text-center">
-          <Button
-            onClick={() => fetchNextPage()}
-            disabled={isFetchingNextPage}
-            variant="outline"
-          >
-            {isFetchingNextPage
-              ? 'Ładowanie...'
-              : 'Załaduj więcej'}
-          </Button>
-        </div>
       )}
     </div>
   );

@@ -10,7 +10,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     
     const query = event.queryStringParameters || {};
     
-    // Parse filter and pagination parameters
+    // Parse filter and bounds parameters
     const options = {
       location: query.location,
       priceMin: query.priceMin ? Number(query.priceMin) : undefined,
@@ -21,15 +21,18 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
           ? query.services 
           : [query.services] 
         : [],
-      limit: query.limit ? parseInt(query.limit, 10) : undefined, // Default handled in storage
-      lastKey: query.lastKey ? JSON.parse(query.lastKey) : undefined // Parse lastKey from JSON string
+      // Parse bounds parameters
+      north: query.north ? parseFloat(query.north) : undefined,
+      south: query.south ? parseFloat(query.south) : undefined,
+      east: query.east ? parseFloat(query.east) : undefined,
+      west: query.west ? parseFloat(query.west) : undefined,
     };
     
     console.log('Getting spaces with options:', options);
-    const { spaces, lastKey } = await storage.getSpaces(options);
+    const { spaces } = await storage.getSpaces(options);
     
-    // Return spaces and the lastKey for the next page
-    return createResponse(200, { spaces, lastKey });
+    // Return only the fetched spaces
+    return createResponse(200, { spaces });
   } catch (error) {
     console.error("Error fetching spaces:", error);
     return createResponse(500, { message: "Failed to fetch coworking spaces" });

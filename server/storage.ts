@@ -11,23 +11,22 @@ import {
 import AWS from "aws-sdk";
 import { MockStorage } from "./mock-storage";
 
+// Add bounds to filter options
 export interface FilterOptions {
   location?: string;
   priceMin?: number;
   priceMax?: number;
   rating?: number;
   services?: string[];
-}
-
-// Add pagination parameters
-interface PaginationOptions {
-  limit?: number;
-  lastKey?: AWS.DynamoDB.DocumentClient.Key;
+  north?: number;
+  south?: number;
+  east?: number;
+  west?: number;
 }
 
 export interface IStorage {
   // Coworking spaces
-  getSpaces(options?: FilterOptions & PaginationOptions): Promise<{ spaces: CoworkingSpace[], lastKey?: AWS.DynamoDB.DocumentClient.Key }>;
+  getSpaces(options?: FilterOptions): Promise<{ spaces: CoworkingSpace[] }>;
   getSpaceById(id: number): Promise<CoworkingSpace | undefined>;
   createSpace(space: InsertCoworkingSpace): Promise<CoworkingSpace>;
   updateSpace(id: number, space: Partial<InsertCoworkingSpace>): Promise<CoworkingSpace | undefined>;
@@ -62,50 +61,60 @@ export class DynamoStorage implements IStorage {
     reports: process.env.REPORTS_TABLE!,
   };
   
-  async getSpaces(options: FilterOptions & PaginationOptions = {}): Promise<{ spaces: CoworkingSpace[]; lastKey?: AWS.DynamoDB.DocumentClient.Key }> {
-    const { limit = 10, lastKey: exclusiveStartKey, ..._filters } = options; // Default limit to 10
+  async getSpaces(options: FilterOptions = {}): Promise<{ spaces: CoworkingSpace[] }> {
+    const { north, south, east, west, ...otherFilters } = options;
     
     try {
       // --- Parameters for the scan operation ---
       const params: AWS.DynamoDB.DocumentClient.ScanInput = {
         TableName: this.tables.spaces,
-        Limit: limit,
       };
-      if (exclusiveStartKey) {
-        params.ExclusiveStartKey = exclusiveStartKey;
-      }
-      
-      // TODO: Implement actual filtering based on _filters
-      // Need to translate FilterOptions (location, priceMin etc.) into DynamoDB FilterExpressions
-      // Example (needs refinement based on actual schema and desired logic):
-      /*
+
+      // --- Build FilterExpression --- 
+      // Warning: Geospatial filtering with Scan is inefficient.
+      // Consider Geohashing + GSI or dedicated geospatial DB for production.
       const filterExpressions: string[] = [];
       const expressionAttributeValues: { [key: string]: any } = {};
       const expressionAttributeNames: { [key: string]: string } = {};
-      
-      if (_filters.location) {
-        filterExpressions.push("#city = :location OR contains(#address, :location)");
+
+      // Add bounds filter if provided
+      if (north !== undefined && south !== undefined && east !== undefined && west !== undefined) {
+        filterExpressions.push(
+          "#lat <= :north AND #lat >= :south AND #lng <= :east AND #lng >= :west"
+        );
+        expressionAttributeNames["#lat"] = "latitude";
+        expressionAttributeNames["#lng"] = "longitude";
+        expressionAttributeValues[":north"] = north;
+        expressionAttributeValues[":south"] = south;
+        expressionAttributeValues[":east"] = east;
+        expressionAttributeValues[":west"] = west;
+      }
+
+      // TODO: Implement other filters (location, price, rating, services) based on otherFilters
+      // Example for location:
+      /*
+      if (otherFilters.location) {
+        filterExpressions.push("(#city = :location OR contains(#address, :location))"); // Ensure parentheses if mixing AND/OR
         expressionAttributeNames["#city"] = "city";
         expressionAttributeNames["#address"] = "address";
-        expressionAttributeValues[":location"] = _filters.location;
+        expressionAttributeValues[":location"] = otherFilters.location;
       }
-      // ... add more filters for price, rating, services ...
-      
+      */
+
+      // Apply combined filter expression if any filters exist
       if (filterExpressions.length > 0) {
         params.FilterExpression = filterExpressions.join(" AND ");
         params.ExpressionAttributeValues = expressionAttributeValues;
         if (Object.keys(expressionAttributeNames).length > 0) {
-             params.ExpressionAttributeNames = expressionAttributeNames;
+          params.ExpressionAttributeNames = expressionAttributeNames;
         }
       }
-      */
-
+       
       // --- Perform the scan --- 
       const spaceResult = await this.client.scan(params).promise();
       let spaces = (spaceResult.Items || []) as CoworkingSpace[];
-      const lastEvaluatedKey = spaceResult.LastEvaluatedKey;
 
-      // --- Fetch and attach pricing (only for the current page of spaces) ---
+      // --- Fetch and attach pricing (only for the filtered spaces) ---
       if (spaces.length > 0) {
         // Inefficiently scan all pricing - consider GSI or BatchGetItem in production
         const pricingResult = await this.client.scan({ TableName: this.tables.pricingPackages }).promise();
@@ -126,8 +135,8 @@ export class DynamoStorage implements IStorage {
         }));
       }
 
-      // Return only spaces and the key for the next page
-      return { spaces, lastKey: lastEvaluatedKey };
+      // Return filtered spaces (no pagination)
+      return { spaces };
     } catch (error) {
       console.error("DynamoDB error in getSpaces:", error);
       throw new Error("Failed to fetch spaces from DynamoDB");

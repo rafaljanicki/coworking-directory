@@ -10,6 +10,7 @@ import { HomePageSEO } from "@/components/SEO";
 import { useSpaces } from "@/hooks/useSpaces";
 import { CoworkingSpace } from "@shared/schema";
 import type L from 'leaflet';
+import { useFilters } from "@/hooks/useFilters";
 
 // Simple debounce hook (copied from MapView)
 const useDebouncedCallback = <T extends (...args: any[]) => any>(
@@ -31,17 +32,26 @@ const useDebouncedCallback = <T extends (...args: any[]) => any>(
 const HomePage = () => {
   const isMobile = useIsMobile();
   const { 
-    allSpaces,
-    isLoading, 
-    error, 
-  } = useSpaces();
+    filters, 
+    activeFilters,
+    updateFilter, 
+    resetFilters, 
+    applyFilters 
+  } = useFilters();
   const [mapBounds, setMapBounds] = useState<L.LatLngBounds | null>(null);
-  const [visibleSpaces, setVisibleSpaces] = useState<CoworkingSpace[]>([]);
   const [selectedSpaceId, setSelectedSpaceId] = useState<number | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isMapVisible, setIsMapVisible] = useState(true);
   const [isMapExpanded, setIsMapExpanded] = useState(false);
   const [cities, setCities] = useState<string[]>([]);
+  
+  console.log(">>> HomePage: Passing activeFilters to useSpaces:", JSON.stringify(activeFilters)); // Log value passed
+  
+  const { 
+    spaces,
+    isLoading, 
+    error, 
+  } = useSpaces(activeFilters, mapBounds);
   
   // Wrap handler in useCallback to stabilize its reference
   const handleSpaceSelect = useCallback((id: number) => {
@@ -66,45 +76,14 @@ const HomePage = () => {
 
   // Extract unique cities for SEO
   useEffect(() => {
-    if (allSpaces && allSpaces.length > 0) {
+    if (spaces && spaces.length > 0) {
       // Get unique cities using filter and indexOf
-      const uniqueCities = allSpaces
+      const uniqueCities = spaces
         .map(space => space.city)
         .filter((city, index, self) => self.indexOf(city) === index);
       setCities(uniqueCities);
     }
-  }, [allSpaces]);
-  
-  // Filter spaces based on map bounds
-  useEffect(() => {
-    if (!mapBounds || !allSpaces || allSpaces.length === 0) {
-      setVisibleSpaces(allSpaces || []); // Show all if no bounds or no spaces
-      return;
-    }
-    
-    const visible = allSpaces.filter(space => {
-      if (!space.latitude || !space.longitude) return false;
-      const lat = typeof space.latitude === 'string' ? parseFloat(space.latitude) : space.latitude;
-      const lng = typeof space.longitude === 'string' ? parseFloat(space.longitude) : space.longitude;
-      if (isNaN(lat) || isNaN(lng)) return false;
-      
-      return (
-        lat >= mapBounds.getSouth() && 
-        lat <= mapBounds.getNorth() && 
-        lng >= mapBounds.getWest() && 
-        lng <= mapBounds.getEast()
-      );
-    });
-    
-    setVisibleSpaces(currentVisibleSpaces => {
-      const currentIds = currentVisibleSpaces.map(s => s.id).join(',');
-      const newIds = visible.map(s => s.id).join(',');
-      if (currentIds === newIds) {
-        return currentVisibleSpaces; // Keep the old reference if IDs are the same
-      }
-      return visible; // Otherwise, update with the new array reference
-    });
-  }, [allSpaces, mapBounds]);
+  }, [spaces]);
   
   // Raw state setter
   const updateBoundsState = useCallback((bounds: L.LatLngBounds) => {
@@ -116,7 +95,7 @@ const HomePage = () => {
   
   return (
     <>
-      <HomePageSEO spaces={allSpaces?.length || 0} cities={cities} />
+      <HomePageSEO spaces={spaces?.length || 0} cities={cities} />
       <Header />
       
       <div className="container mx-auto px-4 py-4">
@@ -174,7 +153,7 @@ const HomePage = () => {
             {isMapVisible && (
               <div className={`w-full ${isMapExpanded ? 'h-[calc(100vh-250px)]' : 'h-[calc(25vh)]'} mb-4 transition-all duration-300`}>
                 <MapView 
-                  spaces={visibleSpaces}
+                  spaces={spaces}
                   isLoading={isLoading}
                   onBoundsChange={handleBoundsChange}
                   onMarkerClick={handleSpaceSelect} 
@@ -186,7 +165,12 @@ const HomePage = () => {
             
             {/* Spaces list - always shown except on mobile when map is visible */}
             <div className={isMobile && isMapVisible ? 'hidden' : 'block'}>
-              <SpacesList onSpaceClick={handleSpaceSelect} />
+              <SpacesList 
+                spaces={spaces} 
+                isLoading={isLoading} 
+                error={error} 
+                onSpaceClick={handleSpaceSelect} 
+              />
             </div>
           </div>
         </div>
