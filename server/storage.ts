@@ -3,8 +3,6 @@ import {
   InsertCoworkingSpace, 
   Service,
   InsertService,
-  PricingPackage,
-  InsertPricingPackage,
   Report,
   InsertReport,
 } from "@shared/schema";
@@ -41,9 +39,7 @@ export interface IStorage {
   addServiceToSpace(spaceId: number, serviceStringId: string): Promise<boolean>;
   removeServiceFromSpace(spaceId: number, serviceStringId: string): Promise<boolean>;
   
-  // Pricing Packages
-  getPricingPackagesBySpaceId(spaceId: number): Promise<PricingPackage[]>;
-  createPricingPackage(pkg: InsertPricingPackage): Promise<PricingPackage>;
+  // Pricing Packages section removed
   
   // Reports
   createReport(report: InsertReport): Promise<Report>;
@@ -57,7 +53,6 @@ export class DynamoStorage implements IStorage {
   private tables = {
     spaces: process.env.COWORKING_SPACES_TABLE!,
     services: process.env.SERVICES_TABLE!,
-    pricingPackages: process.env.PRICING_PACKAGES_TABLE!,
     reports: process.env.REPORTS_TABLE!,
   };
   
@@ -112,31 +107,16 @@ export class DynamoStorage implements IStorage {
        
       // --- Perform the scan --- 
       const spaceResult = await this.client.scan(params).promise();
-      let spaces = (spaceResult.Items || []) as CoworkingSpace[];
-
-      // --- Fetch and attach pricing (only for the filtered spaces) ---
-      if (spaces.length > 0) {
-        // Inefficiently scan all pricing - consider GSI or BatchGetItem in production
-        const pricingResult = await this.client.scan({ TableName: this.tables.pricingPackages }).promise();
-        const allPricingPackages = (pricingResult.Items || []) as PricingPackage[];
-        
-        const pricingBySpaceId: { [key: number]: PricingPackage[] } = {};
-        allPricingPackages.forEach(pkg => {
-          if (!pricingBySpaceId[pkg.spaceId]) {
-            pricingBySpaceId[pkg.spaceId] = [];
-          }
-          pricingBySpaceId[pkg.spaceId].push(pkg);
-        });
-
-        spaces = spaces.map(space => ({
-          ...space,
-          imageUrl: space.imageUrl || undefined,
-          pricingPackages: pricingBySpaceId[space.id] || []
-        }));
-      }
+      const spaces = (spaceResult.Items || []) as CoworkingSpace[]; // Pricing is now embedded
 
       // Return filtered spaces (no pagination)
-      return { spaces };
+      // Ensure imageUrl and pricingPackages have default values if needed, matching CoworkingSpace type
+      const formattedSpaces = spaces.map(space => ({
+        ...space,
+        imageUrl: space.imageUrl || undefined, // Keep existing logic for imageUrl default
+        pricingPackages: space.pricingPackages || [], // Default to empty array if missing from DB item
+      }));
+      return { spaces: formattedSpaces };
     } catch (error) {
       console.error("DynamoDB error in getSpaces:", error);
       throw new Error("Failed to fetch spaces from DynamoDB");
@@ -146,7 +126,18 @@ export class DynamoStorage implements IStorage {
   async getSpaceById(id: number): Promise<CoworkingSpace | undefined> {
     try {
       const result = await this.client.get({ TableName: this.tables.spaces, Key: { id } }).promise();
-      return result.Item as CoworkingSpace | undefined;
+      const space = result.Item as CoworkingSpace | undefined;
+      
+      // Ensure default values for optional fields if the space exists
+      if (space) {
+        return {
+          ...space,
+          imageUrl: space.imageUrl || undefined,
+          pricingPackages: space.pricingPackages || [], // Default to empty array if missing from DB item
+        };
+      }
+      
+      return undefined; // Return undefined if space not found
     } catch (error) {
       console.error(`DynamoDB error in getSpaceById(${id}):`, error);
       throw new Error(`Failed to fetch space ${id} from DynamoDB`);
@@ -252,7 +243,7 @@ export class DynamoStorage implements IStorage {
       // 3. Remove the service string ID from the array
       const updatedServiceIds = space.serviceIds.filter(id => id !== serviceStringId);
       
-      // 4. Update the space with the filtered serviceIds array
+      // 4. Update the space with the modified serviceIds array
       await this.client.update({
         TableName: this.tables.spaces,
         Key: { id: spaceId },
@@ -268,19 +259,6 @@ export class DynamoStorage implements IStorage {
       console.error(`DynamoDB error in removeServiceFromSpace(${spaceId}, ${serviceStringId}):`, error);
       throw new Error(`Failed to remove service ${serviceStringId} from space ${spaceId}`);
     }
-  }
-  
-  async getPricingPackagesBySpaceId(_spaceId: number): Promise<PricingPackage[]> {
-    try {
-      const result = await this.client.scan({ TableName: this.tables.pricingPackages }).promise();
-      return (result.Items || []) as PricingPackage[];
-    } catch (error) {
-      console.error(`DynamoDB error in getPricingPackagesBySpaceId(${_spaceId}):`, error);
-      throw new Error(`Failed to fetch pricing packages for space ${_spaceId} from DynamoDB`);
-    }
-  }
-  async createPricingPackage(_pkg: InsertPricingPackage): Promise<PricingPackage> {
-    throw new Error("createPricingPackage not implemented in DynamoStorage");
   }
   
   async createReport(report: InsertReport): Promise<Report> {
@@ -309,25 +287,8 @@ export class DynamoStorage implements IStorage {
   }
 }
 
-// Use appropriate storage implementation based on environment
-const isDevelopment = process.env.NODE_ENV === 'development';
-console.log(`Using ${isDevelopment ? 'mock' : 'DynamoDB'} storage in ${process.env.NODE_ENV} environment`);
+// Check if we are running locally (IS_OFFLINE is set by serverless-offline)
+const isOffline = process.env.IS_OFFLINE === 'true';
 
-// Fall back to mock storage if AWS credentials are not properly configured
-let selectedStorage: IStorage;
-try {
-  if (isDevelopment) {
-    selectedStorage = new MockStorage();
-  } else {
-    // Check if tables are configured
-    if (!process.env.COWORKING_SPACES_TABLE) {
-      throw new Error("DynamoDB tables not configured");
-    }
-    selectedStorage = new DynamoStorage();
-  }
-} catch (err) {
-  console.warn("Failed to initialize DynamoDB storage, falling back to mock data:", err);
-  selectedStorage = new MockStorage();
-}
-
-export const storage = selectedStorage;
+// Use MockStorage if offline, otherwise use DynamoStorage
+export const storage: IStorage = isOffline ? new MockStorage() : new DynamoStorage();
