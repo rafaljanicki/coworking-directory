@@ -19,9 +19,15 @@ export interface FilterOptions {
   services?: string[];
 }
 
+// Add pagination parameters
+interface PaginationOptions {
+  limit?: number;
+  lastKey?: AWS.DynamoDB.DocumentClient.Key;
+}
+
 export interface IStorage {
   // Coworking spaces
-  getSpaces(filters?: FilterOptions): Promise<{ spaces: CoworkingSpace[], total: number }>;
+  getSpaces(options?: FilterOptions & PaginationOptions): Promise<{ spaces: CoworkingSpace[], lastKey?: AWS.DynamoDB.DocumentClient.Key }>;
   getSpaceById(id: number): Promise<CoworkingSpace | undefined>;
   createSpace(space: InsertCoworkingSpace): Promise<CoworkingSpace>;
   updateSpace(id: number, space: Partial<InsertCoworkingSpace>): Promise<CoworkingSpace | undefined>;
@@ -56,39 +62,72 @@ export class DynamoStorage implements IStorage {
     reports: process.env.REPORTS_TABLE!,
   };
   
-  async getSpaces(_filters: FilterOptions = {}): Promise<{ spaces: CoworkingSpace[]; total: number }> {
+  async getSpaces(options: FilterOptions & PaginationOptions = {}): Promise<{ spaces: CoworkingSpace[]; lastKey?: AWS.DynamoDB.DocumentClient.Key }> {
+    const { limit = 10, lastKey: exclusiveStartKey, ..._filters } = options; // Default limit to 10
+    
     try {
-      // 1. Scan for all spaces
-      const spaceResult = await this.client.scan({ TableName: this.tables.spaces }).promise();
-      let spaces = (spaceResult.Items || []) as CoworkingSpace[];
+      // --- Parameters for the scan operation ---
+      const params: AWS.DynamoDB.DocumentClient.ScanInput = {
+        TableName: this.tables.spaces,
+        Limit: limit,
+      };
+      if (exclusiveStartKey) {
+        params.ExclusiveStartKey = exclusiveStartKey;
+      }
       
-      // 2. Fetch pricing packages for all spaces efficiently
-      // Note: Scanning the pricing table and mapping in memory is inefficient for large tables.
-      // A better approach for production would involve GSI or more targeted queries if possible.
-      const pricingResult = await this.client.scan({ TableName: this.tables.pricingPackages }).promise();
-      const allPricingPackages = (pricingResult.Items || []) as PricingPackage[];
+      // TODO: Implement actual filtering based on _filters
+      // Need to translate FilterOptions (location, priceMin etc.) into DynamoDB FilterExpressions
+      // Example (needs refinement based on actual schema and desired logic):
+      /*
+      const filterExpressions: string[] = [];
+      const expressionAttributeValues: { [key: string]: any } = {};
+      const expressionAttributeNames: { [key: string]: string } = {};
       
-      // Group pricing packages by spaceId
-      const pricingBySpaceId: { [key: number]: PricingPackage[] } = {};
-      allPricingPackages.forEach(pkg => {
-        if (!pricingBySpaceId[pkg.spaceId]) {
-          pricingBySpaceId[pkg.spaceId] = [];
+      if (_filters.location) {
+        filterExpressions.push("#city = :location OR contains(#address, :location)");
+        expressionAttributeNames["#city"] = "city";
+        expressionAttributeNames["#address"] = "address";
+        expressionAttributeValues[":location"] = _filters.location;
+      }
+      // ... add more filters for price, rating, services ...
+      
+      if (filterExpressions.length > 0) {
+        params.FilterExpression = filterExpressions.join(" AND ");
+        params.ExpressionAttributeValues = expressionAttributeValues;
+        if (Object.keys(expressionAttributeNames).length > 0) {
+             params.ExpressionAttributeNames = expressionAttributeNames;
         }
-        pricingBySpaceId[pkg.spaceId].push(pkg);
-      });
+      }
+      */
 
-      // 3. Add pricingPackages and ensure imageUrl is present
-      spaces = spaces.map(space => ({
-        ...space,
-        // Make sure imageUrl is included (it should be if it's a direct attribute)
-        imageUrl: space.imageUrl || undefined, // Explicitly set to undefined if missing
-        pricingPackages: pricingBySpaceId[space.id] || [] // Add the fetched pricing packages
-      }));
+      // --- Perform the scan --- 
+      const spaceResult = await this.client.scan(params).promise();
+      let spaces = (spaceResult.Items || []) as CoworkingSpace[];
+      const lastEvaluatedKey = spaceResult.LastEvaluatedKey;
 
-      // Apply filtering logic (placeholder - could be implemented here if needed)
-      // For now, just returning all enriched spaces
+      // --- Fetch and attach pricing (only for the current page of spaces) ---
+      if (spaces.length > 0) {
+        // Inefficiently scan all pricing - consider GSI or BatchGetItem in production
+        const pricingResult = await this.client.scan({ TableName: this.tables.pricingPackages }).promise();
+        const allPricingPackages = (pricingResult.Items || []) as PricingPackage[];
+        
+        const pricingBySpaceId: { [key: number]: PricingPackage[] } = {};
+        allPricingPackages.forEach(pkg => {
+          if (!pricingBySpaceId[pkg.spaceId]) {
+            pricingBySpaceId[pkg.spaceId] = [];
+          }
+          pricingBySpaceId[pkg.spaceId].push(pkg);
+        });
 
-      return { spaces, total: spaces.length };
+        spaces = spaces.map(space => ({
+          ...space,
+          imageUrl: space.imageUrl || undefined,
+          pricingPackages: pricingBySpaceId[space.id] || []
+        }));
+      }
+
+      // Return only spaces and the key for the next page
+      return { spaces, lastKey: lastEvaluatedKey };
     } catch (error) {
       console.error("DynamoDB error in getSpaces:", error);
       throw new Error("Failed to fetch spaces from DynamoDB");

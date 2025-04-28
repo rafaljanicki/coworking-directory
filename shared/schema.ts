@@ -1,5 +1,18 @@
 import { z } from "zod";
 
+// PricingPackage entity (defined first as it's used in CoworkingSpace)
+export const pricingPackageSchema = z.object({
+  id: z.number(),
+  spaceId: z.number(),
+  name: z.string(),
+  description: z.string().optional(),
+  price: z.number(),
+  billingPeriod: z.string().default("month"),
+  features: z.array(z.string()).default([]),
+});
+
+export const insertPricingPackageSchema = pricingPackageSchema.omit({ id: true });
+
 // Zod schemas for DynamoDB-backed data models                                                                                                                                                          
 // CoworkingSpace entity                                                                                                                                                                                
 export const coworkingSpaceSchema = z.object({                                                                                                                                                          
@@ -18,6 +31,8 @@ export const coworkingSpaceSchema = z.object({
   locationDescription: z.string().optional(),
   // Services as an array of service string IDs directly on the space record (e.g., 'wifi', 'printing', etc.)
   serviceIds: z.array(z.string()).optional(),
+  // Add pricing packages as an optional array
+  pricingPackages: z.array(pricingPackageSchema).optional(),
   createdAt: z.union([z.number(), z.date()]),                                                                                                                                                           
   updatedAt: z.union([z.number(), z.date()]),                                                                                                                                                           
 });                                                                                                                                                                                                     
@@ -40,20 +55,6 @@ export const serviceSchema = z.object({
                                                                                                                                                                                                         
 // Schema for creating a new Service                                                                                                                                                                    
 export const insertServiceSchema = serviceSchema.omit({ id: true });                                                                                                                                    
-                                                                                                                                                                                                        
-// PricingPackage entity                                                                                                                                                                                
-export const pricingPackageSchema = z.object({                                                                                                                                                          
-  id: z.number(),                                                                                                                                                                                       
-  spaceId: z.number(),                                                                                                                                                                                  
-  name: z.string(),                                                                                                                                                                                     
-  description: z.string().optional(),                                                                                                                                                                   
-  price: z.number(),                                                                                                                                                                                    
-  billingPeriod: z.string().default("month"),                                                                                                                                                           
-  features: z.array(z.string()).default([]),                                                                                                                                                            
-});                                                                                                                                                                                                     
-                                                                                                                                                                                                        
-// Schema for creating a new PricingPackage                                                                                                                                                             
-export const insertPricingPackageSchema = pricingPackageSchema.omit({ id: true });                                                                                                                      
                                                                                                                                                                                                         
 // Report entity                                                                                                                                                                                        
 export const reportSchema = z.object({                                                                                                                                                                  

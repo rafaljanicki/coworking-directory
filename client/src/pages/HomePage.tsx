@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Header from "@/components/Header";
 import FiltersBar from "@/components/FiltersBar";
 import SpacesList from "@/components/SpacesList";
@@ -8,45 +8,117 @@ import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { HomePageSEO } from "@/components/SEO";
 import { useSpaces } from "@/hooks/useSpaces";
+import { CoworkingSpace } from "@shared/schema";
+import type L from 'leaflet';
+
+// Simple debounce hook (copied from MapView)
+const useDebouncedCallback = <T extends (...args: any[]) => any>(
+  callback: T,
+  delay: number
+) => {
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  useEffect(() => { return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); }; }, []);
+  const debouncedCallback = useCallback(
+    (...args: Parameters<T>) => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutRef.current = setTimeout(() => { callback(...args); }, delay);
+    },
+    [callback, delay]
+  );
+  return debouncedCallback;
+};
 
 const HomePage = () => {
+  console.log("HomePage re-rendering"); // Log re-renders
   const isMobile = useIsMobile();
-  const { spaces } = useSpaces();
+  const { 
+    allSpaces,
+    isLoading, 
+    error, 
+  } = useSpaces();
+  const [mapBounds, setMapBounds] = useState<L.LatLngBounds | null>(null);
+  const [visibleSpaces, setVisibleSpaces] = useState<CoworkingSpace[]>([]);
   const [selectedSpaceId, setSelectedSpaceId] = useState<number | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [isMapVisible, setIsMapVisible] = useState(!isMobile);
+  const [isMapVisible, setIsMapVisible] = useState(true);
   const [isMapExpanded, setIsMapExpanded] = useState(false);
   const [cities, setCities] = useState<string[]>([]);
   
-  const handleSpaceSelect = (id: number) => {
+  // Wrap handler in useCallback to stabilize its reference
+  const handleSpaceSelect = useCallback((id: number) => {
     setSelectedSpaceId(id);
     setIsDetailModalOpen(true);
-  };
+  }, []); // Dependencies: setSelectedSpaceId, setIsDetailModalOpen (stable)
   
   const handleCloseModal = () => {
     setIsDetailModalOpen(false);
     setSelectedSpaceId(null);
   };
   
-  const toggleMapView = () => {
+  // Wrap callback for stability
+  const toggleMapView = useCallback(() => {
     setIsMapVisible(!isMapVisible);
-  };
+  }, [isMapVisible]);
   
-  const toggleMapExpand = () => {
+  // Wrap callback for stability
+  const toggleMapExpand = useCallback(() => {
     setIsMapExpanded(!isMapExpanded);
-  };
+  }, [isMapExpanded]);
 
   // Extract unique cities for SEO
   useEffect(() => {
-    if (spaces && spaces.length > 0) {
-      const uniqueCities = [...new Set(spaces.map(space => space.city))];
+    if (allSpaces && allSpaces.length > 0) {
+      // Get unique cities using filter and indexOf
+      const uniqueCities = allSpaces
+        .map(space => space.city)
+        .filter((city, index, self) => self.indexOf(city) === index);
       setCities(uniqueCities);
     }
-  }, [spaces]);
+  }, [allSpaces]);
+  
+  // Filter spaces based on map bounds
+  useEffect(() => {
+    if (!mapBounds || !allSpaces || allSpaces.length === 0) {
+      setVisibleSpaces(allSpaces || []); // Show all if no bounds or no spaces
+      return;
+    }
+    
+    const visible = allSpaces.filter(space => {
+      if (!space.latitude || !space.longitude) return false;
+      const lat = typeof space.latitude === 'string' ? parseFloat(space.latitude) : space.latitude;
+      const lng = typeof space.longitude === 'string' ? parseFloat(space.longitude) : space.longitude;
+      if (isNaN(lat) || isNaN(lng)) return false;
+      
+      return (
+        lat >= mapBounds.getSouth() && 
+        lat <= mapBounds.getNorth() && 
+        lng >= mapBounds.getWest() && 
+        lng <= mapBounds.getEast()
+      );
+    });
+    
+    setVisibleSpaces(currentVisibleSpaces => {
+      const currentIds = currentVisibleSpaces.map(s => s.id).join(',');
+      const newIds = visible.map(s => s.id).join(',');
+      if (currentIds === newIds) {
+        return currentVisibleSpaces; // Keep the old reference if IDs are the same
+      }
+      return visible; // Otherwise, update with the new array reference
+    });
+  }, [allSpaces, mapBounds]);
+  
+  // Raw state setter
+  const updateBoundsState = useCallback((bounds: L.LatLngBounds) => {
+    console.log("!!! updateBoundsState called (should be debounced)"); // Log when raw state setter is called
+    setMapBounds(bounds);
+  }, []);
+  
+  // Debounced version of the state setter to pass to MapView
+  const handleBoundsChange = useDebouncedCallback(updateBoundsState, 300);
   
   return (
     <>
-      <HomePageSEO spaces={spaces?.length || 0} cities={cities} />
+      <HomePageSEO spaces={allSpaces?.length || 0} cities={cities} />
       <Header />
       
       <div className="container mx-auto px-4 py-4">
@@ -104,6 +176,9 @@ const HomePage = () => {
             {isMapVisible && (
               <div className={`w-full ${isMapExpanded ? 'h-[calc(100vh-250px)]' : 'h-[calc(25vh)]'} mb-4 transition-all duration-300`}>
                 <MapView 
+                  spaces={visibleSpaces}
+                  isLoading={isLoading}
+                  onBoundsChange={handleBoundsChange}
                   onMarkerClick={handleSpaceSelect} 
                   expanded={isMapExpanded}
                   onToggleExpand={toggleMapExpand}

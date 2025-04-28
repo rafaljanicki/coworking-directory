@@ -3,17 +3,23 @@ import { useSpaces } from "@/hooks/useSpaces";
 import SpaceCard from "@/components/SpaceCard";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 
 interface SpacesListProps {
   onSpaceClick: (id: number) => void;
 }
 
 const SpacesList = ({ onSpaceClick }: SpacesListProps) => {
-  const { spaces, visibleSpaces, totalSpaces, loading, error } = useSpaces();
+  const { 
+    allSpaces,
+    isLoading,
+    error, 
+    totalSpaces, 
+    fetchNextPage, 
+    hasNextPage, 
+    isFetchingNextPage
+  } = useSpaces();
   const [sortMethod, setSortMethod] = useState<string>("recommended");
-  
-  // Determine which spaces to display - use visibleSpaces if filtered by map, otherwise use all spaces
-  const displayedSpaces = visibleSpaces || spaces;
   
   // Log API errors to help with debugging
   if (error) {
@@ -21,7 +27,7 @@ const SpacesList = ({ onSpaceClick }: SpacesListProps) => {
   }
   
   // Sorted spaces based on selected sort method
-  const sortedSpaces = displayedSpaces ? [...displayedSpaces].sort((a, b) => {
+  const sortedSpaces = allSpaces ? [...allSpaces].sort((a, b) => {
     switch (sortMethod) {
       case "price-low":
         const aMinPrice = Math.min(...(a.pricingPackages?.map(p => p.price) || [Infinity]));
@@ -39,8 +45,11 @@ const SpacesList = ({ onSpaceClick }: SpacesListProps) => {
     }
   }) : [];
   
+  // Calculate current count for display
+  const currentCount = sortedSpaces.length;
+  
   // Skeleton for loading state
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="md:h-[calc(100vh-240px)] md:overflow-y-auto custom-scrollbar pb-20 md:pb-0">
         <div className="flex justify-between items-center mb-4 px-4 md:px-0">
@@ -75,14 +84,25 @@ const SpacesList = ({ onSpaceClick }: SpacesListProps) => {
     );
   }
   
+  // Handle API error state
+  if (error) {
+    return (
+      <div className="text-center py-8 bg-white rounded-lg shadow-sm">
+        <p className="text-red-600">Wystąpił błąd podczas ładowania przestrzeni.</p>
+        <p className="text-gray-500 text-sm mt-2">Spróbuj odświeżyć stronę.</p>
+      </div>
+    );
+  }
+  
   return (
     <div className="pb-6">
       <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
         <div className="flex justify-between items-center">
           <h2 className="font-semibold text-lg">
-            {totalSpaces} {totalSpaces === 1 ? 'przestrzeń coworkingowa znaleziona' : 
-              totalSpaces > 1 && totalSpaces < 5 ? 'przestrzenie coworkingowe znalezione' : 
-              'przestrzeni coworkingowych znalezionych'}
+            {/* Display count of currently loaded spaces */}
+            {currentCount} {currentCount === 1 ? 'przestrzeń coworkingowa' : 
+              currentCount > 1 && currentCount < 5 ? 'przestrzenie coworkingowe' : 
+              'przestrzeni coworkingowych'} {isLoading ? '...' : 'znalezionych'}
           </h2>
           <div className="flex items-center">
             <span className="text-sm text-gray-600 mr-2">Sortuj według:</span>
@@ -104,7 +124,8 @@ const SpacesList = ({ onSpaceClick }: SpacesListProps) => {
         </div>
       </div>
       
-      {sortedSpaces.length === 0 ? (
+      {/* Display message if loading finished and no spaces found */}
+      {!isLoading && sortedSpaces.length === 0 ? (
         <div className="text-center py-8 bg-white rounded-lg shadow-sm">
           <p className="text-gray-500">Brak przestrzeni spełniających kryteria.</p>
           <p className="text-gray-500 text-sm mt-2">Spróbuj dostosować kryteria wyszukiwania.</p>
@@ -117,6 +138,21 @@ const SpacesList = ({ onSpaceClick }: SpacesListProps) => {
             onClick={() => onSpaceClick(space.id)}
           />
         ))
+      )}
+      
+      {/* Load More Button */}
+      {hasNextPage && (
+        <div className="mt-6 text-center">
+          <Button
+            onClick={() => fetchNextPage()}
+            disabled={isFetchingNextPage}
+            variant="outline"
+          >
+            {isFetchingNextPage
+              ? 'Ładowanie...'
+              : 'Załaduj więcej'}
+          </Button>
+        </div>
       )}
     </div>
   );

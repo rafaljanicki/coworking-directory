@@ -15,9 +15,6 @@
 - **Dependencies Removed**: @vendia/serverless-express (no longer needed after Lambda refactoring)
 
 # Workflow
-- At the start, run both frontend and backend in the background. Frontend is accessible at http://localhost:8080 and backend at http://localhost:3000
-- IMPORTANT: At the end, run `npm run stop` to stop both services
-- Every API code change, stop the backend, build it and start again
 - IMPORTANT: Always review Readme file after changes. Reduce scope of the review only to the changes performed. Do that only once you've completed all your changes 
 - IMPORTANT: For significant pieces of completed work, update the CHANGELOG.md with a dated changelog. Please start the changelog with the input prompt then followed by each functionality introduced and reference the relevant documentation
 

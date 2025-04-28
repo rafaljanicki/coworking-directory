@@ -1,19 +1,24 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { CoworkingSpace } from '@shared/schema';
 import { useFilters } from '@/hooks/useFilters';
 import { CompleteSpace } from '@/lib/types';
 import { API_BASE_URL, API_KEY } from '@/lib/config';
 
+const PAGE_LIMIT = 10;
+
+interface SpacesApiResponse {
+  spaces: CoworkingSpace[];
+  lastKey?: any; // Use any for simplicity if DynamoDB types aren't shared/installed on frontend
+}
+
 export const useSpaces = () => {
   const { activeFilters } = useFilters();
-  const [spaces, setSpaces] = useState<CoworkingSpace[]>([]);
-  const [totalSpaces, setTotalSpaces] = useState(0);
   const [visibleSpaces, setVisibleSpaces] = useState<CoworkingSpace[]>([]);
   const [mapBounds, setMapBounds] = useState<any>(null);
   
-  // Build query string from filters
-  const getQueryString = () => {
+  // Build query string from filters (excluding pagination)
+  const getFilterQueryString = () => {
     const params = new URLSearchParams();
     
     if (activeFilters.location) {
@@ -41,12 +46,26 @@ export const useSpaces = () => {
     return params.toString();
   };
   
-  // Fetch the spaces based on filters
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['spaces', activeFilters],
-    queryFn: async () => {
-      const queryString = getQueryString();
-      const url = `${API_BASE_URL}/spaces${queryString ? `?${queryString}` : ''}`;
+  // Fetch spaces using infinite query for pagination
+  const { 
+    data, 
+    isLoading, 
+    error, 
+    fetchNextPage, 
+    hasNextPage, 
+    isFetchingNextPage 
+  } = useInfiniteQuery<SpacesApiResponse, Error>({
+    queryKey: ['spaces', activeFilters], // Query key includes filters
+    queryFn: async ({ pageParam = undefined }) => {
+      const filterQueryString = getFilterQueryString();
+      const paginationParams = new URLSearchParams();
+      paginationParams.append('limit', PAGE_LIMIT.toString());
+      if (pageParam) {
+        paginationParams.append('lastKey', JSON.stringify(pageParam));
+      }
+      
+      const queryString = `${filterQueryString ? `&${filterQueryString}` : ''}`;
+      const url = `${API_BASE_URL}/spaces?${paginationParams.toString()}${queryString}`;
       
       // Include API key header if provided
       const headers: Record<string, string> = {};
@@ -63,36 +82,27 @@ export const useSpaces = () => {
       
       return res.json();
     },
-    // Disable automatic refetching based on window focus
-    refetchOnWindowFocus: false,
+    initialPageParam: undefined, // Start with no lastKey
+    getNextPageParam: (lastPage) => {
+      // Return the lastKey from the last fetched page to use as pageParam for the next fetch
+      return lastPage.lastKey;
+    },
+    refetchOnWindowFocus: false, // Optional: keep disabled
   });
   
-  // Update spaces when data changes
-  useEffect(() => {
-    if (data) {
-      console.log("API response:", data);
-      if (Array.isArray(data)) {
-        setSpaces(data);
-        setTotalSpaces(data.length);
-      } else if (data.spaces) {
-        setSpaces(data.spaces);
-        setTotalSpaces(data.total || data.spaces.length);
-      } else {
-        console.error("Unexpected API response format:", data);
-        setSpaces([]);
-        setTotalSpaces(0);
-      }
-    }
-  }, [data]);
+  // Memoize the flattened list of spaces to prevent unnecessary reference changes
+  const allSpaces = useMemo(() => {
+    return data?.pages.flatMap(page => page.spaces) || [];
+  }, [data?.pages]);
   
   // Filter spaces based on map bounds
   useEffect(() => {
-    if (!mapBounds || !spaces.length) {
-      setVisibleSpaces(spaces);
+    if (!mapBounds || !allSpaces.length) {
+      setVisibleSpaces(allSpaces);
       return;
     }
     
-    const visible = spaces.filter(space => {
+    const visible = allSpaces.filter(space => {
       // Skip spaces without valid coordinates
       if (!space.latitude || !space.longitude) return false;
       
@@ -108,7 +118,7 @@ export const useSpaces = () => {
     });
     
     setVisibleSpaces(visible);
-  }, [spaces, mapBounds]);
+  }, [allSpaces, mapBounds]);
   
   // Update map bounds when they change
   const updateMapBounds = useCallback((bounds: any) => {
@@ -117,16 +127,22 @@ export const useSpaces = () => {
   
   // Get a specific space by ID
   const getSpaceById = useCallback((id: number): CompleteSpace | null => {
-    const space = spaces.find(s => s.id === id);
+    const space = allSpaces.find(s => s.id === id);
     return space ? space as CompleteSpace : null;
-  }, [spaces]);
+  }, [allSpaces]);
   
   return { 
-    spaces, 
+    // Return all fetched spaces and the visible subset
+    allSpaces, 
     visibleSpaces,
-    totalSpaces, 
-    loading: isLoading, 
+    // Loading states
+    isLoading, // Initial load 
+    isFetchingNextPage, // Loading next page
     error,
+    // Pagination controls
+    fetchNextPage,
+    hasNextPage, 
+    // Map and detail view functions
     getSpaceById,
     updateMapBounds
   };
