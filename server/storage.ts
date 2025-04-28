@@ -7,8 +7,6 @@ import {
   InsertPricingPackage,
   Report,
   InsertReport,
-  SpaceService,
-  InsertSpaceService
 } from "@shared/schema";
 import AWS from "aws-sdk";
 import { MockStorage } from "./mock-storage";
@@ -60,8 +58,36 @@ export class DynamoStorage implements IStorage {
   
   async getSpaces(_filters: FilterOptions = {}): Promise<{ spaces: CoworkingSpace[]; total: number }> {
     try {
-      const result = await this.client.scan({ TableName: this.tables.spaces }).promise();
-      const spaces = (result.Items || []) as CoworkingSpace[];
+      // 1. Scan for all spaces
+      const spaceResult = await this.client.scan({ TableName: this.tables.spaces }).promise();
+      let spaces = (spaceResult.Items || []) as CoworkingSpace[];
+      
+      // 2. Fetch pricing packages for all spaces efficiently
+      // Note: Scanning the pricing table and mapping in memory is inefficient for large tables.
+      // A better approach for production would involve GSI or more targeted queries if possible.
+      const pricingResult = await this.client.scan({ TableName: this.tables.pricingPackages }).promise();
+      const allPricingPackages = (pricingResult.Items || []) as PricingPackage[];
+      
+      // Group pricing packages by spaceId
+      const pricingBySpaceId: { [key: number]: PricingPackage[] } = {};
+      allPricingPackages.forEach(pkg => {
+        if (!pricingBySpaceId[pkg.spaceId]) {
+          pricingBySpaceId[pkg.spaceId] = [];
+        }
+        pricingBySpaceId[pkg.spaceId].push(pkg);
+      });
+
+      // 3. Add pricingPackages and ensure imageUrl is present
+      spaces = spaces.map(space => ({
+        ...space,
+        // Make sure imageUrl is included (it should be if it's a direct attribute)
+        imageUrl: space.imageUrl || undefined, // Explicitly set to undefined if missing
+        pricingPackages: pricingBySpaceId[space.id] || [] // Add the fetched pricing packages
+      }));
+
+      // Apply filtering logic (placeholder - could be implemented here if needed)
+      // For now, just returning all enriched spaces
+
       return { spaces, total: spaces.length };
     } catch (error) {
       console.error("DynamoDB error in getSpaces:", error);
