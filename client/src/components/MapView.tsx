@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useMemo, useCallback } from "react";
+import React, { useEffect, useRef, useMemo, useCallback, useState } from "react";
 import L from "leaflet";
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from "react-leaflet";
 import "leaflet.markercluster";
@@ -55,7 +55,11 @@ const useDebouncedCallback = <T extends (...args: any[]) => any>(
 };
 
 // Custom hook to handle map events and update bounds
-const MapEventHandler = ({ onBoundsChange }: { onBoundsChange: (bounds: L.LatLngBounds) => void }) => {
+const MapEventHandler = ({ onBoundsChange, setCenter, setZoom }: { 
+  onBoundsChange: (bounds: L.LatLngBounds) => void,
+  setCenter: React.Dispatch<React.SetStateAction<L.LatLng>>,
+  setZoom: React.Dispatch<React.SetStateAction<number>>
+}) => {
   const map = useMap();
   // Debounce the bounds change handler (e.g., 300ms delay)
   const debouncedBoundsChange = useDebouncedCallback(onBoundsChange, 300);
@@ -67,8 +71,17 @@ const MapEventHandler = ({ onBoundsChange }: { onBoundsChange: (bounds: L.LatLng
   
   // Update bounds when map view changes (use debounced handler)
   useMapEvents({
-    moveend: () => debouncedBoundsChange(map.getBounds()),
-    zoomend: () => debouncedBoundsChange(map.getBounds())
+    moveend: () => {
+      console.log("MapView: moveend event fired");
+      debouncedBoundsChange(map.getBounds());
+      setCenter(map.getCenter());
+      setZoom(map.getZoom());
+    },
+    zoomend: () => {
+      console.log("MapView: zoomend event fired");
+      debouncedBoundsChange(map.getBounds());
+      setZoom(map.getZoom());
+    }
   });
   
   return null;
@@ -152,6 +165,11 @@ const MapViewComponent: React.FC<MapViewProps> = ({
 }) => {
   const mapRef = useRef<L.Map | null>(null);
   const center: [number, number] = [52.2297, 21.0122]; // Default center
+  const defaultZoom = 6;
+
+  // State to hold current map view
+  const [currentCenter, setCurrentCenter] = useState<L.LatLng>(L.latLng(center[0], center[1]));
+  const [currentZoom, setCurrentZoom] = useState<number>(defaultZoom);
 
   // Prepare markers - This must run unconditionally before any early returns
   const validMarkers = useMemo(() => {
@@ -189,8 +207,8 @@ const MapViewComponent: React.FC<MapViewProps> = ({
         </button>
       )}
       <MapContainer 
-        center={center} 
-        zoom={6} 
+        center={currentCenter} 
+        zoom={currentZoom} 
         className="h-full w-full"
         ref={mapRef}
       >
@@ -199,8 +217,12 @@ const MapViewComponent: React.FC<MapViewProps> = ({
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         
-        {/* Map event handler - pass the prop directly */}
-        <MapEventHandler onBoundsChange={onBoundsChange} />
+        {/* Pass setters to update map state */}
+        <MapEventHandler 
+          onBoundsChange={onBoundsChange} 
+          setCenter={setCurrentCenter}
+          setZoom={setCurrentZoom}
+        />
         
         {/* Marker cluster group */}
         {!isLoading && (

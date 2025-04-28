@@ -21,8 +21,15 @@ const useDebouncedCallback = <T extends (...args: any[]) => any>(
   useEffect(() => { return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); }; }, []);
   const debouncedCallback = useCallback(
     (...args: Parameters<T>) => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      timeoutRef.current = setTimeout(() => { callback(...args); }, delay);
+      if (timeoutRef.current) {
+        // console.log("Debounce: Clearing previous timer"); // Optional: too verbose?
+        clearTimeout(timeoutRef.current);
+      }
+      console.log(`Debounce: Setting timer for ${delay}ms`);
+      timeoutRef.current = setTimeout(() => {
+        console.log(`Debounce: Timer expired, executing callback`);
+        callback(...args);
+      }, delay);
     },
     [callback, delay]
   );
@@ -91,7 +98,7 @@ const HomePage = () => {
   }, []);
   
   // Debounced version of the state setter to pass to MapView
-  const handleBoundsChange = useDebouncedCallback(updateBoundsState, 300);
+  const handleBoundsChange = useDebouncedCallback(updateBoundsState, 1000);
   
   return (
     <>
