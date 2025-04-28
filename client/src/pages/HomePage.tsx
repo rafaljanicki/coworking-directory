@@ -29,7 +29,6 @@ const useDebouncedCallback = <T extends (...args: any[]) => any>(
 };
 
 const HomePage = () => {
-  console.log("HomePage re-rendering"); // Log re-renders
   const isMobile = useIsMobile();
   const { 
     allSpaces,
@@ -109,7 +108,6 @@ const HomePage = () => {
   
   // Raw state setter
   const updateBoundsState = useCallback((bounds: L.LatLngBounds) => {
-    console.log("!!! updateBoundsState called (should be debounced)"); // Log when raw state setter is called
     setMapBounds(bounds);
   }, []);
   

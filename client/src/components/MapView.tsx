@@ -86,16 +86,6 @@ const MarkerClusterGroup = ({ markers, onMarkerClick }: {
   
   // Initialize cluster group
   useEffect(() => {
-    console.log('MarkerClusterGroup effect running');
-    if (prevMarkersRef.current !== markers) {
-        console.log('>>> markers reference changed');
-    }
-    if (prevOnClickRef.current !== onMarkerClick) {
-        console.log('>>> onMarkerClick reference changed');
-    }
-    prevMarkersRef.current = markers;
-    prevOnClickRef.current = onMarkerClick;
-
     // Create marker cluster group
     if (!clusterGroupRef.current) {
       clusterGroupRef.current = L.markerClusterGroup({
@@ -108,28 +98,10 @@ const MarkerClusterGroup = ({ markers, onMarkerClick }: {
       
       map.addLayer(clusterGroupRef.current);
     }
-    
-    // Clean up on unmount
-    return () => {
-      if (clusterGroupRef.current) {
-        map.removeLayer(clusterGroupRef.current);
-        clusterGroupRef.current = null;
-      }
-    };
   }, [map]);
   
   // Update markers when they change
   useEffect(() => {
-    console.log('MarkerClusterGroup effect running');
-    if (prevMarkersRef.current !== markers) {
-        console.log('>>> markers reference changed');
-    }
-    if (prevOnClickRef.current !== onMarkerClick) {
-        console.log('>>> onMarkerClick reference changed');
-    }
-    prevMarkersRef.current = markers;
-    prevOnClickRef.current = onMarkerClick;
-
     if (!clusterGroupRef.current) return;
     
     // Clear existing markers
@@ -178,7 +150,6 @@ const MapViewComponent: React.FC<MapViewProps> = ({
   expanded = false, 
   onToggleExpand 
 }) => {
-  console.log("MapView re-rendering"); // Log re-renders
   const mapRef = useRef<L.Map | null>(null);
   const center: [number, number] = [52.2297, 21.0122]; // Default center
 
