@@ -41,7 +41,7 @@ const StarRating: FC<StarRatingProps> = ({
           <Star 
             key={`full-${i}`} 
             size={starSize} 
-            className="text-accent fill-accent" 
+            className="text-red-500 fill-red-500"
           />
         ))}
         
@@ -49,7 +49,7 @@ const StarRating: FC<StarRatingProps> = ({
         {hasHalfStar && (
           <StarHalf 
             size={starSize} 
-            className="text-accent fill-accent" 
+            className="text-red-500 fill-red-500"
           />
         )}
         

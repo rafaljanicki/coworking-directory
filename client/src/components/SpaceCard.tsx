@@ -19,9 +19,6 @@ const SpaceCard = ({ space, onClick }: SpaceCardProps) => {
     return minPrice;
   };
   
-  // Get top three services to display
-  const topServices = space.services?.slice(0, 3).map(service => service.name) || [];
-  
   return (
     <article 
       className="bg-white rounded-lg shadow-sm overflow-hidden mb-4 hover:shadow-md transition cursor-pointer"
@@ -44,24 +41,13 @@ const SpaceCard = ({ space, onClick }: SpaceCardProps) => {
             <div itemProp="aggregateRating" itemScope itemType="https://schema.org/AggregateRating">
               <meta itemProp="ratingValue" content={space.rating.toString()} />
               <meta itemProp="reviewCount" content={Math.floor(Math.random() * 100 + 10).toString()} />
-              <StarRating rating={space.rating} />
+              <StarRating rating={space.rating ?? 0} />
             </div>
           </header>
           <address className="text-sm text-gray-600 mb-2 flex items-center not-italic" itemProp="address" itemScope itemType="https://schema.org/PostalAddress">
             <MapPin className="h-4 w-4 mr-1 text-gray-400" />
             <span itemProp="addressLocality">{space.city}</span>, <span itemProp="streetAddress">{space.address}</span>
           </address>
-          
-          <section className="flex flex-wrap gap-2 mb-3" itemProp="amenityFeature">
-            {topServices.map((service, index) => (
-              <span 
-                key={index} 
-                className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded"
-              >
-                {service}
-              </span>
-            ))}
-          </section>
           
           <footer className="flex justify-between items-end">
             <div>
