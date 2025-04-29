@@ -148,6 +148,7 @@ const MobileFiltersContent = ({
             className="w-full pl-10 pr-4 py-2"
             value={filters.location || ''}
             onChange={(e) => updateFilter('location', e.target.value)}
+            id="filter-location"
           />
         </div>
       </div>
@@ -162,6 +163,7 @@ const MobileFiltersContent = ({
             className="w-1/2"
             value={filters.priceMin || ''}
             onChange={(e) => updateFilter('priceMin', parseInt(e.target.value) || 0)}
+            id="filter-price-min"
           />
           <span className="text-gray-500">-</span>
           <Input 
@@ -170,6 +172,7 @@ const MobileFiltersContent = ({
             className="w-1/2"
             value={filters.priceMax || ''}
             onChange={(e) => updateFilter('priceMax', parseInt(e.target.value) || 0)}
+            id="filter-price-max"
           />
         </div>
       </div>
@@ -182,6 +185,7 @@ const MobileFiltersContent = ({
             variant={filters.rating === 3 ? "secondary" : "outline"} 
             className="flex items-center justify-center w-10 h-10 p-0"
             onClick={() => updateFilter('rating', filters.rating === 3 ? undefined : 3)}
+            id="filter-rating-3"
           >
             3+
           </Button>
@@ -189,6 +193,7 @@ const MobileFiltersContent = ({
             variant={filters.rating === 4 ? "secondary" : "outline"} 
             className="flex items-center justify-center w-10 h-10 p-0"
             onClick={() => updateFilter('rating', filters.rating === 4 ? undefined : 4)}
+            id="filter-rating-4"
           >
             4+
           </Button>
@@ -196,6 +201,7 @@ const MobileFiltersContent = ({
             variant={filters.rating === 5 ? "secondary" : "outline"} 
             className="flex items-center justify-center w-10 h-10 p-0"
             onClick={() => updateFilter('rating', filters.rating === 5 ? undefined : 5)}
+            id="filter-rating-5"
           >
             5
           </Button>
@@ -210,6 +216,7 @@ const MobileFiltersContent = ({
             <label key={service.id} className="flex items-center">
               <Checkbox 
                 checked={filters.services.includes(service.id)}
+                id={`filter-service-${service.id}`}
                 onCheckedChange={(checked) => {
                   if (checked) {
                     updateFilter('services', [...filters.services, service.id]);
@@ -230,6 +237,7 @@ const MobileFiltersContent = ({
             variant="link" 
             className="text-sm text-primary font-medium mt-2 p-0 h-auto"
             onClick={() => setShowAllServices(!showAllServices)}
+            id="filter-show-more-services"
           >
             {showAllServices ? "Pokaż mniej" : "Pokaż więcej usług"}
           </Button>
@@ -242,6 +250,7 @@ const MobileFiltersContent = ({
           variant="outline" 
           className="w-1/2"
           onClick={resetFilters}
+          id="filter-reset-button"
         >
           Resetuj
         </Button>
@@ -256,6 +265,7 @@ const MobileFiltersContent = ({
             ) as HTMLElement | null;
             closeButton?.click();
           }}
+          id="filter-apply-button"
         >
           Zastosuj
         </Button>
