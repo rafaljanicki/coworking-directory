@@ -54,6 +54,11 @@ const HomePage = () => {
   
   console.log(">>> HomePage: Passing activeFilters to useSpaces:", JSON.stringify(activeFilters)); // Log value passed
   
+  // Log when activeFilters actually changes in HomePage
+  useEffect(() => {
+    console.log('>>> HomePage useEffect: activeFilters changed to:', JSON.stringify(activeFilters));
+  }, [activeFilters]);
+  
   const { 
     spaces,
     isLoading, 
@@ -111,6 +116,10 @@ const HomePage = () => {
           <FiltersBar 
             onToggleMap={toggleMapView}
             isMapVisible={isMapVisible}
+            filters={filters}
+            updateFilter={updateFilter}
+            resetFilters={resetFilters}
+            applyFilters={applyFilters}
           />
         </div>
         
@@ -121,6 +130,10 @@ const HomePage = () => {
               <FiltersBar 
                 onToggleMap={toggleMapView}
                 isMapVisible={isMapVisible}
+                filters={filters}
+                updateFilter={updateFilter}
+                resetFilters={resetFilters}
+                applyFilters={applyFilters}
               />
             </div>
           </div>

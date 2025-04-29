@@ -3,17 +3,17 @@ import { FilterState } from '@/lib/types';
 import { queryClient } from '@/lib/queryClient';
 import { API_BASE_URL } from '@/lib/config';
 
+// Default filter state
+export const initialFilters: FilterState = {
+  location: undefined,
+  priceMin: undefined,
+  priceMax: undefined,
+  rating: undefined,
+  services: []
+};
+
 export const useFilters = (autoApplyDelay = 200) => {
   // Default filter state
-  const initialFilters: FilterState = {
-    location: undefined,
-    priceMin: undefined,
-    priceMax: undefined,
-    rating: undefined,
-    services: []
-  };
-  
-  // Form state for filters (before applying)
   const [filters, setFilters] = useState<FilterState>(initialFilters);
   
   // Active filters that are actually applied
@@ -45,17 +45,12 @@ export const useFilters = (autoApplyDelay = 200) => {
   const resetFilters = useCallback(() => {
     setFilters(initialFilters);
     setActiveFilters(initialFilters);
-    
-    // Invalidate queries to re-fetch with default filters
-    queryClient.invalidateQueries({ queryKey: ['spaces'] });
   }, [initialFilters]);
   
   // Apply current filters
   const applyFilters = useCallback(() => {
     setActiveFilters(filters);
-    
-    // Invalidate queries to re-fetch with new filters
-    queryClient.invalidateQueries({ queryKey: ['spaces'] });
+    console.log('>>> useFilters: applyFilters called, setting activeFilters to:', JSON.stringify(filters));
   }, [filters]);
   
   // Cleanup timer on unmount

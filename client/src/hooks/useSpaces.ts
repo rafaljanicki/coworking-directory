@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { CoworkingSpace } from '@shared/schema';
-import { useFilters } from '@/hooks/useFilters';
+import { useFilters, initialFilters } from '@/hooks/useFilters';
 import { CompleteSpace, FilterState } from '@/lib/types';
 import { API_BASE_URL, API_KEY } from '@/lib/config';
 import type L from 'leaflet';
@@ -12,6 +12,8 @@ interface SpacesApiResponse {
 }
 
 export const useSpaces = (activeFilters: FilterState, mapBounds: L.LatLngBounds | null) => {
+  console.log('>>> useSpaces Hook Render - Filters:', JSON.stringify(activeFilters), 'Bounds:', mapBounds?.toBBoxString()); // ADDED LOG
+
   // Build query string for filters
   const getFilterQueryString = () => {
     const filtersToUse = activeFilters;
@@ -66,6 +68,18 @@ export const useSpaces = (activeFilters: FilterState, mapBounds: L.LatLngBounds 
     mapBounds?.toBBoxString() // Use stable string representation of bounds
   ];
 
+  // Determine if filters are active
+  const filtersAreActive = 
+    activeFilters.location !== undefined || 
+    activeFilters.priceMin !== undefined || 
+    activeFilters.priceMax !== undefined || 
+    activeFilters.rating !== undefined || 
+    activeFilters.services.length > 0;
+
+  const isEnabled = !!mapBounds || filtersAreActive; // Calculate enabled state
+  console.log('>>> useSpaces: Query Key:', JSON.stringify(queryKeyDeps)); // ADDED LOG
+  console.log('>>> useSpaces: Is Enabled?', isEnabled); // ADDED LOG
+
   const { 
     data: responseData,
     isLoading, 
@@ -109,7 +123,7 @@ export const useSpaces = (activeFilters: FilterState, mapBounds: L.LatLngBounds 
       return res.json();
     },
     refetchOnWindowFocus: false, 
-    enabled: !!mapBounds, // Only run query when mapBounds are available
+    enabled: isEnabled, // Use calculated enabled state
   });
 
   // Get spaces directly from the response

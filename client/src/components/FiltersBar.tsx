@@ -2,7 +2,6 @@ import { Filter, MapPin, SlidersHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useFilters } from "@/hooks/useFilters";
 import { FilterState } from "@/lib/types";
 import { 
   Sheet, 
@@ -30,10 +29,20 @@ interface ServiceInfo {
 interface FilterToggleProps {
   onToggleMap: () => void;
   isMapVisible: boolean;
+  filters: FilterState;
+  updateFilter: (key: keyof FilterState, value: any) => void;
+  resetFilters: () => void;
+  applyFilters: () => void;
 }
 
-const FiltersBar = ({ onToggleMap, isMapVisible }: FilterToggleProps) => {
-  const { filters, updateFilter, resetFilters, applyFilters } = useFilters();
+const FiltersBar = ({ 
+  onToggleMap, 
+  isMapVisible, 
+  filters, 
+  updateFilter, 
+  resetFilters, 
+  applyFilters 
+}: FilterToggleProps) => {
   const [showAllServices, setShowAllServices] = useState(false);
   
   // Displayed services (limited or all)
