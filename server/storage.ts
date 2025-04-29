@@ -136,13 +136,104 @@ export class DynamoStorage implements IStorage {
     }
   }
   
-  async createSpace(_space: InsertCoworkingSpace): Promise<CoworkingSpace> {
-    throw new Error("createSpace not implemented in DynamoStorage");
+  async createSpace(spaceInput: InsertCoworkingSpace): Promise<CoworkingSpace> {
+    // Basic implementation: generate ID, set defaults, put item
+    // WARNING: ID generation might conflict in concurrent scenarios. Use UUIDs or atomic counters in production.
+    const newId = Date.now(); // Simple ID generation, replace in production
+    const now = Date.now();
+    
+    const newSpace: CoworkingSpace = {
+      ...spaceInput,
+      id: newId,
+      rating: spaceInput.rating || 0,
+      // Ensure embedded arrays default to empty if not provided
+      serviceIds: spaceInput.serviceIds || [],
+      pricingPackages: (spaceInput.pricingPackages || []).map((pkg, index) => ({ 
+          ...pkg, 
+          // Ensure each embedded package has an ID (simple sequential ID for now)
+          id: pkg.id || Date.now() + index // Use existing ID or generate one
+      })),
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    try {
+      await this.client.put({
+        TableName: this.tables.spaces,
+        Item: newSpace,
+        // Optional: Add ConditionExpression to prevent overwriting existing ID if needed
+        // ConditionExpression: "attribute_not_exists(id)"
+      }).promise();
+      return newSpace;
+    } catch (error) {
+      console.error("DynamoDB error in createSpace:", error);
+      // Add more specific error handling (e.g., conditional check failed)
+      throw new Error("Failed to create space in DynamoDB");
+    }
   }
-  async updateSpace(_id: number, _space: Partial<InsertCoworkingSpace>): Promise<CoworkingSpace | undefined> {
-    throw new Error("updateSpace not implemented in DynamoStorage");
+
+  async updateSpace(id: number, spaceUpdate: Partial<InsertCoworkingSpace>): Promise<CoworkingSpace | undefined> {
+     // Basic implementation using UpdateItem
+     // Note: This replaces the entire pricingPackages array if provided.
+     // More granular updates (add/remove single package) require different logic.
+    const now = Date.now();
+    const updateExpressionParts: string[] = [];
+    const expressionAttributeValues: { [key: string]: any } = { ':now': now };
+    const expressionAttributeNames: { [key: string]: string } = {};
+
+    // Build UpdateExpression dynamically based on fields in spaceUpdate
+    for (const key in spaceUpdate) {
+      if (Object.prototype.hasOwnProperty.call(spaceUpdate, key) && key !== 'id') {
+        const attrKey = `#${key}`;
+        const valKey = `:${key}`;
+        updateExpressionParts.push(`${attrKey} = ${valKey}`);
+        expressionAttributeNames[attrKey] = key;
+        // Ensure pricingPackages have IDs if updating
+        if (key === 'pricingPackages' && Array.isArray((spaceUpdate as any)[key])) {
+           expressionAttributeValues[valKey] = ((spaceUpdate as any)[key] as any[]).map((pkg, index) => ({
+             ...pkg,
+             id: pkg.id || Date.now() + index
+           }));
+        } else {
+           expressionAttributeValues[valKey] = (spaceUpdate as any)[key];
+        }
+      }
+    }
+
+    // Always update the 'updatedAt' timestamp
+    updateExpressionParts.push("#updatedAt = :now");
+    expressionAttributeNames["#updatedAt"] = "updatedAt";
+
+    if (updateExpressionParts.length === 1) { // Only updatedAt is being updated
+        console.warn(`updateSpace called for id ${id} with no fields to update.`);
+        // Optionally fetch and return the current item or throw error
+        return this.getSpaceById(id);
+    }
+
+    const updateExpression = `SET ${updateExpressionParts.join(', ')}`;
+
+    try {
+      const result = await this.client.update({
+        TableName: this.tables.spaces,
+        Key: { id },
+        UpdateExpression: updateExpression,
+        ExpressionAttributeNames: expressionAttributeNames,
+        ExpressionAttributeValues: expressionAttributeValues,
+        ReturnValues: "ALL_NEW", // Return the updated item
+        // Optional: Add ConditionExpression to ensure the item exists
+        // ConditionExpression: "attribute_exists(id)"
+      }).promise();
+      
+      return result.Attributes as CoworkingSpace | undefined;
+    } catch (error) {
+      console.error(`DynamoDB error in updateSpace(${id}):`, error);
+      // Add more specific error handling (e.g., conditional check failed)
+      throw new Error(`Failed to update space ${id} in DynamoDB`);
+    }
   }
+  
   async deleteSpace(_id: number): Promise<boolean> {
+    // Keep existing stub or implement delete logic
     throw new Error("deleteSpace not implemented in DynamoStorage");
   }
   

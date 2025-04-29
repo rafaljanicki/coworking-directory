@@ -180,11 +180,6 @@ Resources:
           Properties:
             Path: /spaces/{id}
             Method: OPTIONS
-        SpacePricingOptions:
-          Type: Api
-          Properties:
-            Path: /spaces/{id}/pricing
-            Method: OPTIONS
         ReportsOptions:
           Type: Api
           Properties:

@@ -3,7 +3,6 @@ import { z } from "zod";
 // PricingPackage entity (defined first as it's used in CoworkingSpace)
 export const pricingPackageSchema = z.object({
   id: z.number(),
-  spaceId: z.number(),
   name: z.string(),
   description: z.string().optional(),
   price: z.number(),
