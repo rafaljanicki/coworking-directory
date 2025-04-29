@@ -57,36 +57,62 @@ export class DynamoStorage implements IStorage {
         TableName: this.tables.spaces,
       };
 
-      // --- Build FilterExpression --- 
-      // Warning: Geospatial filtering with Scan is inefficient.
-      // Consider Geohashing + GSI or dedicated geospatial DB for production.
+      // --- Build FilterExpression ---
       const filterExpressions: string[] = [];
       const expressionAttributeValues: { [key: string]: any } = {};
       const expressionAttributeNames: { [key: string]: string } = {};
+      let nameCounter = 0; // Counter for unique attribute name placeholders
+      let valueCounter = 0; // Counter for unique attribute value placeholders
+
+      // Helper to create unique value placeholder
+      const addValue = (value: any): string => {
+        const placeholder = `:val${valueCounter++}`;
+        expressionAttributeValues[placeholder] = value;
+        return placeholder;
+      };
 
       // Add bounds filter if provided
       if (north !== undefined && south !== undefined && east !== undefined && west !== undefined) {
+        expressionAttributeNames["#lat"] = "latitude";
+        expressionAttributeNames["#lng"] = "longitude";
         filterExpressions.push(
           "#lat <= :north AND #lat >= :south AND #lng <= :east AND #lng >= :west"
         );
-        expressionAttributeNames["#lat"] = "latitude";
-        expressionAttributeNames["#lng"] = "longitude";
         expressionAttributeValues[":north"] = north;
         expressionAttributeValues[":south"] = south;
         expressionAttributeValues[":east"] = east;
         expressionAttributeValues[":west"] = west;
       }
 
-      // TODO: Implement other filters (location, price, rating, services) based on otherFilters
-      // Example for location:
-      /*
+      // --- Implement other filters ---
+
+      // Location filter (matches city OR part of address)
       if (otherFilters.location) {
-        filterExpressions.push("(#city = :location OR contains(#address, :location))"); // Ensure parentheses if mixing AND/OR
         expressionAttributeNames["#city"] = "city";
         expressionAttributeNames["#address"] = "address";
-        expressionAttributeValues[":location"] = otherFilters.location;
+        const locationVal = addValue(otherFilters.location);
+        filterExpressions.push("(#city = :locationVal OR contains(#address, :locationVal))");
+        // Note: Manually alias :locationVal to the generated placeholder in values
+        expressionAttributeValues[":locationVal"] = expressionAttributeValues[locationVal];
       }
-      */
+
+      // Rating filter (greater than or equal to)
+      if (otherFilters.rating !== undefined) {
+        expressionAttributeNames["#rating"] = "rating";
+        const ratingVal = addValue(otherFilters.rating);
+        filterExpressions.push("#rating >= :minRating");
+         // Note: Manually alias :minRating to the generated placeholder in values
+        expressionAttributeValues[":minRating"] = expressionAttributeValues[ratingVal];
+      }
+
+      // Services filter (contains ALL specified services)
+      if (otherFilters.services && otherFilters.services.length > 0) {
+        expressionAttributeNames["#serviceIds"] = "serviceIds";
+        otherFilters.services.forEach((serviceId, index) => {
+          const serviceValPlaceholder = addValue(serviceId);
+          filterExpressions.push(`contains(#serviceIds, ${serviceValPlaceholder})`);
+        });
+      }
 
       // Apply combined filter expression if any filters exist
       if (filterExpressions.length > 0) {
@@ -95,19 +121,45 @@ export class DynamoStorage implements IStorage {
         if (Object.keys(expressionAttributeNames).length > 0) {
           params.ExpressionAttributeNames = expressionAttributeNames;
         }
+        console.log("DynamoDB Scan Parameters:", JSON.stringify(params, null, 2)); // Log generated params
+      } else {
+        console.log("DynamoDB Scan without filters (except potential bounds)");
       }
-       
-      // --- Perform the scan --- 
-      const spaceResult = await this.client.scan(params).promise();
-      const spaces = (spaceResult.Items || []) as CoworkingSpace[]; // Pricing is now embedded
 
-      // Return filtered spaces (no pagination)
-      // Ensure imageUrl and pricingPackages have default values if needed, matching CoworkingSpace type
-      const formattedSpaces = spaces.map(space => ({
+      // --- Perform the scan ---
+      // Note: Scan can be slow and costly on large tables. Consider GSI for production.
+      const spaceResult = await this.client.scan(params).promise();
+      let scannedSpaces = (spaceResult.Items || []) as CoworkingSpace[];
+
+      console.log(`Scanned ${scannedSpaces.length} spaces from DynamoDB matching filters (excluding price).`);
+
+      // --- Post-scan filtering for Price Range ---
+      let priceFilteredSpaces = scannedSpaces;
+      if (otherFilters.priceMin !== undefined || otherFilters.priceMax !== undefined) {
+        priceFilteredSpaces = scannedSpaces.filter(space => {
+          const packages = space.pricingPackages || [];
+          if (packages.length === 0) {
+            // If no packages, only include if priceMin is 0 or undefined
+            return otherFilters.priceMin === undefined || otherFilters.priceMin === 0;
+          }
+
+          return packages.some(pkg => {
+            const price = pkg.price; // Assuming 'price' is the field name
+            const minMatch = otherFilters.priceMin === undefined || price >= otherFilters.priceMin;
+            const maxMatch = otherFilters.priceMax === undefined || price <= otherFilters.priceMax;
+            return minMatch && maxMatch;
+          });
+        });
+        console.log(`Filtered down to ${priceFilteredSpaces.length} spaces after applying price range.`);
+      }
+
+      // Ensure imageUrl and pricingPackages have default values if needed
+      const formattedSpaces = priceFilteredSpaces.map(space => ({
         ...space,
-        imageUrl: space.imageUrl || undefined, // Keep existing logic for imageUrl default
-        pricingPackages: space.pricingPackages || [], // Default to empty array if missing from DB item
+        imageUrl: space.imageUrl || undefined,
+        pricingPackages: space.pricingPackages || [],
       }));
+
       return { spaces: formattedSpaces };
     } catch (error) {
       console.error("DynamoDB error in getSpaces:", error);
