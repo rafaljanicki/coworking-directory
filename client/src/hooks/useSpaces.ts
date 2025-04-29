@@ -55,19 +55,31 @@ export const useSpaces = (activeFilters: FilterState, mapBounds: L.LatLngBounds 
   };
   
   // Fetch spaces using useQuery, dependent on filters and bounds
+  // Create a stable query key based on filter *values*
+  const queryKeyDeps = [
+    'spaces',
+    activeFilters.location,
+    activeFilters.priceMin,
+    activeFilters.priceMax,
+    activeFilters.rating,
+    JSON.stringify(activeFilters.services.sort()), // Sort services for stability
+    mapBounds?.toBBoxString() // Use stable string representation of bounds
+  ];
+
   const { 
     data: responseData,
     isLoading, 
     error, 
     refetch
   } = useQuery<SpacesApiResponse, Error>({
-    // Query key now includes filters AND bounds (use simple string for bounds to ensure stability)
-    queryKey: ['spaces', activeFilters, mapBounds?.toBBoxString()], 
+    // Use the stable dependency array as the query key
+    queryKey: queryKeyDeps, 
     queryFn: async () => { 
+      // Use the activeFilters passed as argument here
       console.log('>>> queryFn running with filters:', JSON.stringify(activeFilters), 'Bounds:', mapBounds?.toBBoxString());
 
-      // Generate query strings
-      const filterQueryString = getFilterQueryString();
+      // Generate query strings using the passed activeFilters
+      const filterQueryString = getFilterQueryString(); 
       const boundsQueryString = getBoundsQueryString();
 
       console.log('>>> filterQueryString generated:', filterQueryString);

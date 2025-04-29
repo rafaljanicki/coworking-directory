@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useFilters } from "@/hooks/useFilters";
+import { FilterState } from "@/lib/types";
 import { 
   Sheet, 
   SheetContent, 
@@ -10,7 +11,7 @@ import {
   SheetTitle, 
   SheetTrigger 
 } from "@/components/ui/sheet";
-import { useState } from "react";
+import React, { useState } from "react";
 import { serviceIdToInfoMap } from "@/lib/services";
 
 // Generate SERVICES array from the imported map
@@ -19,6 +20,12 @@ const ALL_SERVICES = Object.entries(serviceIdToInfoMap).map(([id, info]) => ({
   name: info.name,
   // icon: info.icon // Icon not needed for filter list, but available
 }));
+
+// Define type for service info
+interface ServiceInfo {
+  id: string;
+  name: string;
+}
 
 interface FilterToggleProps {
   onToggleMap: () => void;
@@ -87,132 +94,37 @@ const FiltersBar = ({ onToggleMap, isMapVisible }: FilterToggleProps) => {
       <div className="bg-white rounded-lg shadow-sm p-4 mb-4 hidden md:block">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-semibold text-lg">Filtry</h2>
-          <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-xs text-gray-600"
-              onClick={resetFilters}
-            >
-              Resetuj
-            </Button>
-          </div>
         </div>
         
-        <div className="space-y-5">
-          {/* Location filter */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Lokalizacja</label>
-            <div className="relative">
-              <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-              <Input 
-                type="text" 
-                placeholder="Wyszukaj miasto lub obszar" 
-                className="w-full pl-10 pr-4 py-2"
-                value={filters.location || ''}
-                onChange={(e) => updateFilter('location', e.target.value)}
-              />
-            </div>
-          </div>
-          
-          {/* Price Range */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Zakres cenowy (PLN)</label>
-            <div className="flex items-center space-x-2">
-              <Input 
-                type="number" 
-                placeholder="Min" 
-                className="w-1/2"
-                value={filters.priceMin || ''}
-                onChange={(e) => updateFilter('priceMin', parseInt(e.target.value) || 0)}
-              />
-              <span className="text-gray-500">-</span>
-              <Input 
-                type="number" 
-                placeholder="Max" 
-                className="w-1/2"
-                value={filters.priceMax || ''}
-                onChange={(e) => updateFilter('priceMax', parseInt(e.target.value) || 0)}
-              />
-            </div>
-          </div>
-          
-          {/* Ratings */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Minimalna ocena</label>
-            <div className="flex space-x-2">
-              <Button 
-                variant={filters.rating === 3 ? "secondary" : "outline"} 
-                className="flex items-center justify-center w-10 h-10 p-0"
-                onClick={() => updateFilter('rating', filters.rating === 3 ? undefined : 3)}
-              >
-                3+
-              </Button>
-              <Button 
-                variant={filters.rating === 4 ? "secondary" : "outline"} 
-                className="flex items-center justify-center w-10 h-10 p-0"
-                onClick={() => updateFilter('rating', filters.rating === 4 ? undefined : 4)}
-              >
-                4+
-              </Button>
-              <Button 
-                variant={filters.rating === 5 ? "secondary" : "outline"} 
-                className="flex items-center justify-center w-10 h-10 p-0"
-                onClick={() => updateFilter('rating', filters.rating === 5 ? undefined : 5)}
-              >
-                5
-              </Button>
-            </div>
-          </div>
-          
-          {/* Services */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Usługi</label>
-            <div className="flex flex-col gap-2">
-              {displayedServices.map((service) => (
-                <label key={service.id} className="flex items-center">
-                  <Checkbox 
-                    checked={filters.services.includes(service.id)}
-                    onCheckedChange={(checked) => {
-                      if (checked) {
-                        updateFilter('services', [...filters.services, service.id]);
-                      } else {
-                        updateFilter(
-                          'services', 
-                          filters.services.filter(s => s !== service.id)
-                        );
-                      }
-                    }}
-                  />
-                  <span className="ml-2 text-sm text-gray-700">{service.name}</span>
-                </label>
-              ))}
-            </div>
-            {ALL_SERVICES.length > 5 && (
-              <Button 
-                variant="link" 
-                className="text-sm text-primary font-medium mt-2 p-0 h-auto"
-                onClick={() => setShowAllServices(!showAllServices)}
-              >
-                {showAllServices ? "Pokaż mniej" : "Pokaż więcej usług"}
-              </Button>
-            )}
-          </div>
-          
-          {/* Apply button */}
-          <Button 
-            className="w-full bg-primary text-white hover:bg-primary/90 mt-4"
-            onClick={applyFilters}
-          >
-            Zastosuj filtry
-          </Button>
-        </div>
+        {/* Render the unified filter content component */}
+        <MobileFiltersContent 
+          filters={filters}
+          updateFilter={updateFilter}
+          displayedServices={displayedServices}
+          allServices={ALL_SERVICES}
+          showAllServices={showAllServices}
+          setShowAllServices={setShowAllServices}
+          resetFilters={resetFilters}
+          applyFilters={applyFilters} 
+        />
       </div>
     </>
   );
 };
 
-// Mobile Filters Content - used inside the Sheet component
+// Define Props for MobileFiltersContent
+interface MobileFiltersContentProps {
+  filters: FilterState;
+  updateFilter: (key: keyof FilterState, value: any) => void;
+  displayedServices: ServiceInfo[];
+  allServices: ServiceInfo[];
+  showAllServices: boolean;
+  setShowAllServices: React.Dispatch<React.SetStateAction<boolean>>;
+  resetFilters: () => void;
+  applyFilters: () => void;
+}
+
+// Mobile Filters Content - used inside the Sheet component AND directly on desktop
 const MobileFiltersContent = ({ 
   filters, 
   updateFilter, 
@@ -222,7 +134,7 @@ const MobileFiltersContent = ({
   setShowAllServices, 
   resetFilters, 
   applyFilters 
-}: any) => {
+}: MobileFiltersContentProps) => {
   return (
     <div className="space-y-6">
       {/* Location filter */}
@@ -293,8 +205,8 @@ const MobileFiltersContent = ({
       {/* Services */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">Usługi</label>
-        <div className="space-y-2">
-          {displayedServices.map((service: any) => (
+        <div className="flex flex-col gap-2">
+          {displayedServices.map((service) => (
             <label key={service.id} className="flex items-center">
               <Checkbox 
                 checked={filters.services.includes(service.id)}
@@ -304,7 +216,7 @@ const MobileFiltersContent = ({
                   } else {
                     updateFilter(
                       'services', 
-                      filters.services.filter((s: string) => s !== service.id)
+                      filters.services.filter(s => s !== service.id)
                     );
                   }
                 }}
@@ -338,9 +250,11 @@ const MobileFiltersContent = ({
           className="w-1/2 bg-primary text-white hover:bg-primary/90"
           onClick={() => {
             applyFilters();
-            document.querySelector('[data-radix-scroll-area-close]')?.dispatchEvent(
-              new MouseEvent('click', { bubbles: true })
-            );
+            // Attempt to close the sheet if inside one (only works on mobile)
+            const closeButton = document.querySelector(
+              '[data-radix-dialog-content] button[aria-label="Close"]'
+            ) as HTMLElement | null;
+            closeButton?.click();
           }}
         >
           Zastosuj
