@@ -12,8 +12,6 @@ interface SpacesApiResponse {
 }
 
 export const useSpaces = (activeFilters: FilterState, mapBounds: L.LatLngBounds | null) => {
-  console.log('>>> useSpaces Hook Render - Filters:', JSON.stringify(activeFilters), 'Bounds:', mapBounds?.toBBoxString()); // ADDED LOG
-
   // Build query string for filters
   const getFilterQueryString = () => {
     const filtersToUse = activeFilters;
@@ -77,8 +75,6 @@ export const useSpaces = (activeFilters: FilterState, mapBounds: L.LatLngBounds 
     activeFilters.services.length > 0;
 
   const isEnabled = !!mapBounds || filtersAreActive; // Calculate enabled state
-  console.log('>>> useSpaces: Query Key:', JSON.stringify(queryKeyDeps)); // ADDED LOG
-  console.log('>>> useSpaces: Is Enabled?', isEnabled); // ADDED LOG
 
   const { 
     data: responseData,
@@ -90,14 +86,9 @@ export const useSpaces = (activeFilters: FilterState, mapBounds: L.LatLngBounds 
     queryKey: queryKeyDeps, 
     queryFn: async () => { 
       // Use the activeFilters passed as argument here
-      console.log('>>> queryFn running with filters:', JSON.stringify(activeFilters), 'Bounds:', mapBounds?.toBBoxString());
-
       // Generate query strings using the passed activeFilters
       const filterQueryString = getFilterQueryString(); 
       const boundsQueryString = getBoundsQueryString();
-
-      console.log('>>> filterQueryString generated:', filterQueryString);
-      console.log('>>> boundsQueryString generated:', boundsQueryString);
 
       // Combine query strings
       const combinedParams = new URLSearchParams();
@@ -113,7 +104,6 @@ export const useSpaces = (activeFilters: FilterState, mapBounds: L.LatLngBounds 
         headers['x-api-key'] = API_KEY;
       }
       
-      console.log("Fetching from URL:", url);
       const res = await fetch(url, { headers });
       
       if (!res.ok) {

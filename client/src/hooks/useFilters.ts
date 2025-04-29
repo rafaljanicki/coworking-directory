@@ -50,7 +50,6 @@ export const useFilters = (autoApplyDelay = 200) => {
   // Apply current filters
   const applyFilters = useCallback(() => {
     setActiveFilters(filters);
-    console.log('>>> useFilters: applyFilters called, setting activeFilters to:', JSON.stringify(filters));
   }, [filters]);
   
   // Cleanup timer on unmount

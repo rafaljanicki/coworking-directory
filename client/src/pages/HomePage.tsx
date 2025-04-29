@@ -25,9 +25,7 @@ const useDebouncedCallback = <T extends (...args: any[]) => any>(
         // console.log("Debounce: Clearing previous timer"); // Optional: too verbose?
         clearTimeout(timeoutRef.current);
       }
-      console.log(`Debounce: Setting timer for ${delay}ms`);
       timeoutRef.current = setTimeout(() => {
-        console.log(`Debounce: Timer expired, executing callback`);
         callback(...args);
       }, delay);
     },
@@ -51,13 +49,6 @@ const HomePage = () => {
   const [isMapVisible, setIsMapVisible] = useState(true);
   const [isMapExpanded, setIsMapExpanded] = useState(false);
   const [cities, setCities] = useState<string[]>([]);
-  
-  console.log(">>> HomePage: Passing activeFilters to useSpaces:", JSON.stringify(activeFilters)); // Log value passed
-  
-  // Log when activeFilters actually changes in HomePage
-  useEffect(() => {
-    console.log('>>> HomePage useEffect: activeFilters changed to:', JSON.stringify(activeFilters));
-  }, [activeFilters]);
   
   const { 
     spaces,
