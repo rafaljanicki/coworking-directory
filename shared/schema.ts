@@ -44,18 +44,6 @@ export const insertCoworkingSpaceSchema = coworkingSpaceSchema
     rating: z.number().default(0),                                                                                                                                                                      
   });                                                                                                                                                                                                   
                                                                                                                                                                                                         
-// Service entity                                                                                                                                                                                       
-export const serviceSchema = z.object({                                                                                                                                                                 
-  id: z.number(),                                                                                                                                                                                       
-  name: z.string(),                                                                                                                                                                                     
-  description: z.string().optional(),                                                                                                                                                                   
-  icon: z.string().optional(),
-  serviceId: z.string().optional(),                                                                                                                                                                         
-});                                                                                                                                                                                                     
-                                                                                                                                                                                                        
-// Schema for creating a new Service                                                                                                                                                                    
-export const insertServiceSchema = serviceSchema.omit({ id: true });                                                                                                                                    
-                                                                                                                                                                                                        
 // Report entity                                                                                                                                                                                        
 export const reportSchema = z.object({                                                                                                                                                                  
   id: z.number(),                                                                                                                                                                                       
@@ -82,9 +70,6 @@ export const insertReportSchema = reportSchema.omit({
 // TypeScript types                                                                                                                                                                                     
 export type CoworkingSpace = z.infer<typeof coworkingSpaceSchema>;                                                                                                                                      
 export type InsertCoworkingSpace = z.infer<typeof insertCoworkingSpaceSchema>;                                                                                                                          
-                                                                                                                                                                                                        
-export type Service = z.infer<typeof serviceSchema>;                                                                                                                                                    
-export type InsertService = z.infer<typeof insertServiceSchema>;                                                                                                                                        
                                                                                                                                                                                                         
 export type PricingPackage = z.infer<typeof pricingPackageSchema>;                                                                                                                                      
 export type InsertPricingPackage = z.infer<typeof insertPricingPackageSchema>;                                                                                                                          

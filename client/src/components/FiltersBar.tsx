@@ -11,20 +11,14 @@ import {
   SheetTrigger 
 } from "@/components/ui/sheet";
 import { useState } from "react";
+import { serviceIdToInfoMap } from "@/lib/services";
 
-// Common services to filter by
-const SERVICES = [
-  { id: "24_7_access", label: "Dostęp 24/7" },
-  { id: "wifi", label: "Szybkie WiFi" },
-  { id: "meeting_rooms", label: "Sale konferencyjne" },
-  { id: "coffee_tea", label: "Kawa i herbata" },
-  { id: "printing", label: "Usługi drukowania" },
-  { id: "events_space", label: "Przestrzeń eventowa" },
-  { id: "kitchen", label: "Kuchnia" },
-  { id: "phone_booths", label: "Budki telefoniczne" },
-  { id: "parking", label: "Parking" },
-  { id: "private_desks", label: "Biurka prywatne" },
-];
+// Generate SERVICES array from the imported map
+const ALL_SERVICES = Object.entries(serviceIdToInfoMap).map(([id, info]) => ({
+  id: id,
+  name: info.name,
+  // icon: info.icon // Icon not needed for filter list, but available
+}));
 
 interface FilterToggleProps {
   onToggleMap: () => void;
@@ -37,8 +31,8 @@ const FiltersBar = ({ onToggleMap, isMapVisible }: FilterToggleProps) => {
   
   // Displayed services (limited or all)
   const displayedServices = showAllServices 
-    ? SERVICES 
-    : SERVICES.slice(0, 5);
+    ? ALL_SERVICES 
+    : ALL_SERVICES.slice(0, 5);
   
   return (
     <>
@@ -61,6 +55,7 @@ const FiltersBar = ({ onToggleMap, isMapVisible }: FilterToggleProps) => {
                   filters={filters}
                   updateFilter={updateFilter}
                   displayedServices={displayedServices}
+                  allServices={ALL_SERVICES}
                   showAllServices={showAllServices}
                   setShowAllServices={setShowAllServices}
                   resetFilters={resetFilters}
@@ -189,17 +184,19 @@ const FiltersBar = ({ onToggleMap, isMapVisible }: FilterToggleProps) => {
                       }
                     }}
                   />
-                  <span className="ml-2 text-sm text-gray-700">{service.label}</span>
+                  <span className="ml-2 text-sm text-gray-700">{service.name}</span>
                 </label>
               ))}
             </div>
-            <Button 
-              variant="link" 
-              className="text-sm text-primary font-medium mt-2 p-0 h-auto"
-              onClick={() => setShowAllServices(!showAllServices)}
-            >
-              {showAllServices ? "Pokaż mniej" : "Pokaż więcej usług"}
-            </Button>
+            {ALL_SERVICES.length > 5 && (
+              <Button 
+                variant="link" 
+                className="text-sm text-primary font-medium mt-2 p-0 h-auto"
+                onClick={() => setShowAllServices(!showAllServices)}
+              >
+                {showAllServices ? "Pokaż mniej" : "Pokaż więcej usług"}
+              </Button>
+            )}
           </div>
           
           {/* Apply button */}
@@ -220,6 +217,7 @@ const MobileFiltersContent = ({
   filters, 
   updateFilter, 
   displayedServices, 
+  allServices,
   showAllServices, 
   setShowAllServices, 
   resetFilters, 
@@ -311,17 +309,19 @@ const MobileFiltersContent = ({
                   }
                 }}
               />
-              <span className="ml-2 text-sm text-gray-700">{service.label}</span>
+              <span className="ml-2 text-sm text-gray-700">{service.name}</span>
             </label>
           ))}
         </div>
-        <Button 
-          variant="link" 
-          className="text-sm text-primary font-medium mt-2 p-0 h-auto"
-          onClick={() => setShowAllServices(!showAllServices)}
-        >
-          {showAllServices ? "Pokaż mniej" : "Pokaż więcej"}
-        </Button>
+        {ALL_SERVICES.length > 5 && (
+          <Button 
+            variant="link" 
+            className="text-sm text-primary font-medium mt-2 p-0 h-auto"
+            onClick={() => setShowAllServices(!showAllServices)}
+          >
+            {showAllServices ? "Pokaż mniej" : "Pokaż więcej usług"}
+          </Button>
+        )}
       </div>
       
       {/* Apply / Reset */}

@@ -1,8 +1,6 @@
 import { 
   CoworkingSpace, 
   InsertCoworkingSpace, 
-  Service,
-  InsertService,
   Report,
   InsertReport,
 } from "@shared/schema";
@@ -30,11 +28,6 @@ export interface IStorage {
   updateSpace(id: number, space: Partial<InsertCoworkingSpace>): Promise<CoworkingSpace | undefined>;
   deleteSpace(id: number): Promise<boolean>;
   
-  // Services
-  getServices(): Promise<Service[]>;
-  getServicesBySpaceId(spaceId: number): Promise<Service[]>;
-  createService(service: InsertService): Promise<Service>;
-  
   // Space Service management
   addServiceToSpace(spaceId: number, serviceStringId: string): Promise<boolean>;
   removeServiceFromSpace(spaceId: number, serviceStringId: string): Promise<boolean>;
@@ -52,7 +45,6 @@ export class DynamoStorage implements IStorage {
   private client = new AWS.DynamoDB.DocumentClient();
   private tables = {
     spaces: process.env.COWORKING_SPACES_TABLE!,
-    services: process.env.SERVICES_TABLE!,
     reports: process.env.REPORTS_TABLE!,
   };
   
@@ -152,41 +144,6 @@ export class DynamoStorage implements IStorage {
   }
   async deleteSpace(_id: number): Promise<boolean> {
     throw new Error("deleteSpace not implemented in DynamoStorage");
-  }
-  
-  async getServices(): Promise<Service[]> {
-    try {
-      const result = await this.client.scan({ TableName: this.tables.services }).promise();
-      return (result.Items || []) as Service[];
-    } catch (error) {
-      console.error("DynamoDB error in getServices:", error);
-      throw new Error("Failed to fetch services from DynamoDB");
-    }
-  }
-  
-  async getServicesBySpaceId(spaceId: number): Promise<Service[]> {
-    try {
-      // 1. Get the space with its service string IDs
-      const space = await this.getSpaceById(spaceId);
-      if (!space || !space.serviceIds || space.serviceIds.length === 0) {
-        return [];
-      }
-      
-      // 2. Get all services
-      const allServices = await this.getServices();
-      
-      // 3. Filter services by the string IDs stored in the space
-      return allServices.filter(service => 
-        space.serviceIds!.includes(service.serviceId || '')
-      );
-    } catch (error) {
-      console.error(`DynamoDB error in getServicesBySpaceId(${spaceId}):`, error);
-      throw new Error(`Failed to fetch services for space ${spaceId} from DynamoDB`);
-    }
-  }
-  
-  async createService(_service: InsertService): Promise<Service> {
-    throw new Error("createService not implemented in DynamoStorage");
   }
   
   // Simplified space-service management using denormalized approach with string IDs

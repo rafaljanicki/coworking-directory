@@ -1,14 +1,10 @@
 import { 
   CoworkingSpace, 
   InsertCoworkingSpace, 
-  Service,
-  InsertService,
   PricingPackage,
   InsertPricingPackage,
   Report,
   InsertReport,
-  SpaceService,
-  InsertSpaceService
 } from "@shared/schema";
 import { FilterOptions, IStorage } from "./storage";
 
@@ -27,6 +23,7 @@ const mockSpaces: CoworkingSpace[] = [
     phone: "+48 22 100 00 00",
     email: "contact@businesslink.pl",
     website: "https://businesslink.pl",
+    serviceIds: ["24_7_access", "wifi", "coffee_tea", "private_desks"],
     createdAt: Date.now(),
     updatedAt: Date.now()
   },
@@ -41,6 +38,7 @@ const mockSpaces: CoworkingSpace[] = [
     rating: 4.7,
     imageUrl: "https://via.placeholder.com/400x300?text=O4+Coworking",
     phone: "+48 58 100 00 00",
+    serviceIds: ["wifi", "meeting_rooms", "printing"],
     createdAt: Date.now(),
     updatedAt: Date.now()
   },
@@ -55,22 +53,10 @@ const mockSpaces: CoworkingSpace[] = [
     rating: 4.3,
     imageUrl: "https://via.placeholder.com/400x300?text=Strefa+Startups",
     phone: "+48 12 100 00 00",
+    serviceIds: ["wifi", "printing", "events_space"],
     createdAt: Date.now(),
     updatedAt: Date.now()
   }
-];
-
-const mockServices: Service[] = [
-  { id: 1, name: "24/7 Access", serviceId: "24_7_access" },
-  { id: 2, name: "High-speed WiFi", serviceId: "wifi" },
-  { id: 3, name: "Meeting Rooms", serviceId: "meeting_rooms" },
-  { id: 4, name: "Coffee & Tea", serviceId: "coffee_tea" },
-  { id: 5, name: "Printing Services", serviceId: "printing" },
-  { id: 6, name: "Kitchen", serviceId: "kitchen" },
-  { id: 7, name: "Events Space", serviceId: "events_space" },
-  { id: 8, name: "Phone Booths", serviceId: "phone_booths" },
-  { id: 9, name: "Parking", serviceId: "parking" },
-  { id: 10, name: "Private Desks", serviceId: "private_desks" }
 ];
 
 const mockPackages: PricingPackage[] = [
@@ -141,12 +127,6 @@ const mockPackages: PricingPackage[] = [
 
 const mockReports: Report[] = [];
 
-// Mock space-service associations
-// Initialize the spaces with service string IDs
-mockSpaces[0].serviceIds = ["24_7_access", "wifi", "coffee_tea", "private_desks"]; // Space 1 
-mockSpaces[1].serviceIds = ["wifi", "meeting_rooms", "printing"];                 // Space 2
-mockSpaces[2].serviceIds = ["wifi", "printing", "events_space"];                  // Space 3
-
 // Mock implementation of IStorage for development
 export class MockStorage implements IStorage {
   async getSpaces(filters: FilterOptions = {}): Promise<{ spaces: CoworkingSpace[]; total: number }> {
@@ -183,43 +163,20 @@ export class MockStorage implements IStorage {
       filteredSpaces = filteredSpaces.filter(space => space.rating >= filters.rating!);
     }
     
-    // Add service information to make filtering easier in the UI
-    for (const space of filteredSpaces as any[]) {
-      // Get pricing packages for this space
+    // Attach pricing packages
+    filteredSpaces = filteredSpaces.map(space => {
       const packages = mockPackages.filter(pkg => pkg.spaceId === space.id);
-      space.pricingPackages = packages;
-      
-      // Get services based on serviceIds array
-      if (space.serviceIds && space.serviceIds.length > 0) {
-        space.services = mockServices.filter(service => 
-          space.serviceIds.includes(service.serviceId || '')
-        );
-      } else {
-        // If no services are associated, add some default services including private desk if applicable
-        const hasPrivateDesk = packages.some(pkg => pkg.name === "Private Desk");
-        
-        // Get some default services with string IDs
-        let serviceStringIds: string[] = ["wifi", "coffee_tea", "printing"];
-        
-        // Add private desk service if the space has private desk package
-        if (hasPrivateDesk) {
-          serviceStringIds.push("private_desks");
-        }
-        
-        // Get the actual service objects
-        space.services = mockServices.filter(service => 
-          service.serviceId && serviceStringIds.includes(service.serviceId)
-        );
-        
-        // Initialize serviceIds array and populate it
-        space.serviceIds = serviceStringIds;
-      }
-    }
+      return {
+        ...space,
+        pricingPackages: packages,
+        serviceIds: space.serviceIds || []
+      };
+    });
     
     // Filter by services if specified
     if (filters.services && filters.services.length > 0) {
       filteredSpaces = filteredSpaces.filter((space: any) => {
-        const spaceServiceIds = space.services.map((s: any) => s.serviceId);
+        const spaceServiceIds = space.serviceIds || [];
         return filters.services!.some(service => spaceServiceIds.includes(service));
       });
     }
@@ -234,41 +191,12 @@ export class MockStorage implements IStorage {
     // Get pricing packages for this space
     const packages = mockPackages.filter(pkg => pkg.spaceId === id);
     
-    // Get services based on serviceIds array
-    let services: Service[] = [];
-    if (space.serviceIds && space.serviceIds.length > 0) {
-      services = mockServices.filter(service => 
-        space.serviceIds!.includes(service.serviceId || '')
-      );
-    } else {
-      // If no services are associated, add some default services including private desk if applicable
-      const hasPrivateDesk = packages.some(pkg => pkg.name === "Private Desk");
-      
-      // Get some default services with string IDs
-      let serviceStringIds: string[] = ["wifi", "coffee_tea", "printing"];
-      
-      // Add private desk service if the space has private desk package
-      if (hasPrivateDesk) {
-        serviceStringIds.push("private_desks");
-      }
-      
-      // Get the actual service objects
-      services = mockServices.filter(service => 
-        service.serviceId && serviceStringIds.includes(service.serviceId)
-      );
-      
-      // Initialize serviceIds array and populate it
-      space.serviceIds = serviceStringIds;
-    }
-    
-    // Add services and pricing packages to the space
-    const result = { 
-      ...space,
-      services,
-      pricingPackages: packages
+    // Return the space with pricing attached, serviceIds should already be there
+    return { 
+      ...space, 
+      pricingPackages: packages,
+      serviceIds: space.serviceIds || [] 
     };
-    
-    return result as any;
   }
   
   async createSpace(space: InsertCoworkingSpace): Promise<CoworkingSpace> {
@@ -300,31 +228,6 @@ export class MockStorage implements IStorage {
     return true;
   }
   
-  async getServices(): Promise<Service[]> {
-    return mockServices;
-  }
-  
-  async getServicesBySpaceId(spaceId: number): Promise<Service[]> {
-    // Find the space
-    const space = mockSpaces.find(s => s.id === spaceId);
-    
-    // If space doesn't exist or has no services, return empty array
-    if (!space || !space.serviceIds || space.serviceIds.length === 0) {
-      return [];
-    }
-    
-    // Return services with matching string IDs
-    return mockServices.filter(service => space.serviceIds!.includes(service.serviceId || ''));
-  }
-  
-  async createService(service: InsertService): Promise<Service> {
-    const id = mockServices.length + 1;
-    const newService = { id, ...service };
-    mockServices.push(newService);
-    return newService;
-  }
-  
-  // Simplified Space-Service management with string IDs
   async addServiceToSpace(spaceId: number, serviceStringId: string): Promise<boolean> {
     // Find the space
     const space = mockSpaces.find(s => s.id === spaceId);
@@ -366,17 +269,6 @@ export class MockStorage implements IStorage {
     space.updatedAt = Date.now();
     
     return true;
-  }
-  
-  async getPricingPackagesBySpaceId(spaceId: number): Promise<PricingPackage[]> {
-    return mockPackages.filter(pkg => pkg.spaceId === spaceId);
-  }
-  
-  async createPricingPackage(pkg: InsertPricingPackage): Promise<PricingPackage> {
-    const id = mockPackages.length + 1;
-    const newPackage = { id, ...pkg };
-    mockPackages.push(newPackage);
-    return newPackage;
   }
   
   async createReport(report: InsertReport): Promise<Report> {

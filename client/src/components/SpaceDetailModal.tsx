@@ -1,5 +1,5 @@
 import { useSpaces } from "@/hooks/useSpaces";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { CompleteSpace as CompleteSpaceType } from "@/lib/types";
 import ReportChangesModal from "@/components/ReportChangesModal";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import { API_BASE_URL, API_KEY } from '@/lib/config';
+import { getServiceInfo } from '@/lib/services';
 
 // Define the fetcher function
 const fetchSpaceById = async (spaceId: number): Promise<CompleteSpaceType> => {
@@ -70,7 +71,6 @@ const SpaceDetailModal = ({
   };
   
   // --- Prepare data used in the main render block --- 
-  // Move data preparation here to avoid repetition in conditional rendering
   const spaceData = space; // Alias for clarity inside the return
   const galleryImages = spaceData ? [
     spaceData.imageUrl || 'https://via.placeholder.com/800x600?text=No+Image',
@@ -80,9 +80,13 @@ const SpaceDetailModal = ({
     'https://via.placeholder.com/800x600?text=Coffee+Corner'
   ] : [];
   
-  const amenities = spaceData?.services?.map(service => service.name) || [];
-  const amenitiesFirstColumn = amenities.slice(0, Math.ceil(amenities.length / 2));
-  const amenitiesSecondColumn = amenities.slice(Math.ceil(amenities.length / 2));
+  // Use serviceIds and the mapping function to get display info
+  const amenitiesInfo = useMemo(() => 
+    (spaceData?.serviceIds || []).map(id => ({ id, ...getServiceInfo(id) })),
+    [spaceData?.serviceIds]
+  );
+  const amenitiesFirstColumn = amenitiesInfo.slice(0, Math.ceil(amenitiesInfo.length / 2));
+  const amenitiesSecondColumn = amenitiesInfo.slice(Math.ceil(amenitiesInfo.length / 2));
 
   return (
     <>
@@ -182,22 +186,28 @@ const SpaceDetailModal = ({
                     </div>
                     
                     {/* Amenities */} 
-                    {amenities.length > 0 && (
+                    {amenitiesInfo.length > 0 && (
                       <div className="mb-6">
                         <h3 className="text-lg font-semibold mb-3">Amenities & Services</h3>
                         <div className="grid grid-cols-2 gap-y-2">
-                          {amenitiesFirstColumn.map((amenity, i) => (
-                            <div key={i} className="flex items-center">
-                              <Check className="h-4 w-4 text-secondary mr-2 flex-shrink-0" />
-                              <span>{amenity}</span>
-                            </div>
-                          ))}
-                          {amenitiesSecondColumn.map((amenity, i) => (
-                            <div key={i} className="flex items-center">
-                              <Check className="h-4 w-4 text-secondary mr-2 flex-shrink-0" />
-                              <span>{amenity}</span>
-                            </div>
-                          ))}
+                          {amenitiesFirstColumn.map((amenity) => {
+                             const IconComponent = amenity.icon; // Get the icon component
+                             return (
+                              <div key={amenity.id} className="flex items-center">
+                                <IconComponent className="h-4 w-4 text-secondary mr-2 flex-shrink-0" aria-hidden="true" />
+                                <span>{amenity.name}</span>
+                              </div>
+                             );
+                           })}
+                          {amenitiesSecondColumn.map((amenity) => {
+                             const IconComponent = amenity.icon; // Get the icon component
+                             return (
+                              <div key={amenity.id} className="flex items-center">
+                                <IconComponent className="h-4 w-4 text-secondary mr-2 flex-shrink-0" aria-hidden="true" />
+                                <span>{amenity.name}</span>
+                              </div>
+                            );
+                           })}
                         </div>
                       </div>
                     )}
