@@ -1,12 +1,11 @@
 import { 
   CoworkingSpace, 
   InsertCoworkingSpace, 
-  PricingPackage,
-  InsertPricingPackage,
   Report,
   InsertReport,
 } from "@shared/schema";
 import { FilterOptions, IStorage } from "./storage";
+import { BlogPost } from "@shared/schema";
 
 // Mock data for development
 const mockSpaces: CoworkingSpace[] = [
@@ -59,73 +58,38 @@ const mockSpaces: CoworkingSpace[] = [
   }
 ];
 
-const mockPackages: PricingPackage[] = [
-  { 
-    id: 1, 
-    spaceId: 1, 
-    name: "Day Pass", 
-    description: "Access for one day",
-    price: 50, 
-    billingPeriod: "day",
-    features: ["Access to open space", "WiFi", "Coffee & Tea"]
-  },
-  { 
-    id: 2, 
-    spaceId: 1, 
-    name: "Flex Desk", 
-    description: "Access to any available desk",
-    price: 600, 
-    billingPeriod: "month",
-    features: ["24/7 access", "WiFi", "Meeting room credits (2h)", "Kitchen access"]
-  },
-  { 
-    id: 3, 
-    spaceId: 1, 
-    name: "Fixed Desk", 
-    description: "Your own dedicated desk",
-    price: 900, 
-    billingPeriod: "month",
-    features: ["24/7 access", "WiFi", "Meeting room credits (5h)", "Kitchen access", "Mail handling"]
-  },
-  { 
-    id: 4, 
-    spaceId: 1, 
-    name: "Private Desk", 
-    description: "Your own private desk in a separated area",
-    price: 1200, 
-    billingPeriod: "month",
-    features: ["24/7 access", "Private desk", "WiFi", "Meeting room credits (10h)", "Kitchen access", "Mail handling", "Locker"]
-  },
-  { 
-    id: 5, 
-    spaceId: 2, 
-    name: "Day Pass", 
-    description: "Access for one day",
-    price: 45, 
-    billingPeriod: "day",
-    features: ["Access to open space", "WiFi", "Coffee & Tea"]
-  },
-  { 
-    id: 6, 
-    spaceId: 2, 
-    name: "Private Desk", 
-    description: "Your own private desk in a separated area",
-    price: 1100, 
-    billingPeriod: "month",
-    features: ["24/7 access", "Private desk", "WiFi", "Meeting room credits (8h)", "Kitchen access", "Mail handling"]
-  },
-  { 
-    id: 7, 
-    spaceId: 3, 
-    name: "Private Desk", 
-    description: "Your own private desk in a separated area",
-    price: 1050, 
-    billingPeriod: "month",
-    features: ["24/7 access", "Private desk", "WiFi", "Meeting room credits (5h)", "Kitchen access"]
-  }
-];
-
 const mockReports: Report[] = [];
+
+// Add mock blog posts
+const mockBlogPosts: BlogPost[] = [
+  {
+    id: "post-1",
+    slug: "first-blog-post",
+    title: "My First Blog Post",
+    content: "<p>This is the content of the first blog post.</p>",
+    author: "Admin",
+    createdAt: new Date(Date.now() - 86400000 * 2).toISOString(), // 2 days ago
+    updatedAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+    featuredImageUrl: "https://via.placeholder.com/800x400?text=First+Post",
+    excerpt: "A short summary of the first post.",
+    metaTitle: "My First Blog Post | SEO Title",
+    metaDescription: "This is the meta description for the first blog post.",
+    keywords: ["blog", "first post", "example"],
+  },
+  {
+    id: "post-2",
+    slug: "second-post-about-coworking",
+    title: "Why Coworking is Great",
+    content: "<p>Here are some reasons why coworking rocks!</p>",
+    author: "Admin",
+    createdAt: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
+    updatedAt: new Date(Date.now() - 86400000).toISOString(),
+    excerpt: "Discover the benefits of coworking spaces.",
+    metaTitle: "Why Coworking is Great | Blog",
+    metaDescription: "Learn about the advantages of using shared office spaces.",
+    keywords: ["coworking", "benefits", "productivity"],
+  },
+];
 
 // Mock implementation of IStorage for development
 export class MockStorage implements IStorage {
@@ -141,37 +105,9 @@ export class MockStorage implements IStorage {
       );
     }
     
-    if (filters.priceMin !== undefined) {
-      // Find spaces with packages that meet the minimum price
-      const spaceIds = mockPackages
-        .filter(pkg => pkg.price >= filters.priceMin!)
-        .map(pkg => pkg.spaceId);
-      
-      filteredSpaces = filteredSpaces.filter(space => spaceIds.includes(space.id));
-    }
-    
-    if (filters.priceMax !== undefined) {
-      // Find spaces with packages that meet the maximum price
-      const spaceIds = mockPackages
-        .filter(pkg => pkg.price <= filters.priceMax!)
-        .map(pkg => pkg.spaceId);
-      
-      filteredSpaces = filteredSpaces.filter(space => spaceIds.includes(space.id));
-    }
-    
     if (filters.rating !== undefined) {
       filteredSpaces = filteredSpaces.filter(space => space.rating >= filters.rating!);
     }
-    
-    // Attach pricing packages
-    filteredSpaces = filteredSpaces.map(space => {
-      const packages = mockPackages.filter(pkg => pkg.spaceId === space.id);
-      return {
-        ...space,
-        pricingPackages: packages,
-        serviceIds: space.serviceIds || []
-      };
-    });
     
     // Filter by services if specified
     if (filters.services && filters.services.length > 0) {
@@ -188,13 +124,9 @@ export class MockStorage implements IStorage {
     const space = mockSpaces.find(s => s.id === id);
     if (!space) return undefined;
     
-    // Get pricing packages for this space
-    const packages = mockPackages.filter(pkg => pkg.spaceId === id);
-    
-    // Return the space with pricing attached, serviceIds should already be there
+    // Return the space without pricing attached
     return { 
       ...space, 
-      pricingPackages: packages,
       serviceIds: space.serviceIds || [] 
     };
   }
@@ -301,4 +233,18 @@ export class MockStorage implements IStorage {
     
     return mockReports[index];
   }
+
+  // --- Mock Blog Post Methods ---
+  async getPosts(): Promise<{ posts: BlogPost[] }> {
+    console.log("MockStorage: getPosts called");
+    // Return a copy of the mock posts
+    return { posts: [...mockBlogPosts] }; 
+  }
+
+  async getPostBySlug(slug: string): Promise<BlogPost | undefined> {
+    console.log(`MockStorage: getPostBySlug called with slug: ${slug}`);
+    const post = mockBlogPosts.find(p => p.slug === slug);
+    return post ? { ...post } : undefined; // Return a copy if found
+  }
+  // --- End Mock Blog Post Methods ---
 }

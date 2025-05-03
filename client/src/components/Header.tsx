@@ -22,6 +22,11 @@ const Header = () => {
             </Link>
           </div>
           <div>
+            <Link href="/blog" className="hover:text-primary transition-colors">
+              Blog
+            </Link>
+          </div>
+          <div>
             <Link href="/dla-wlascicieli" className="hover:text-primary transition-colors">
               Dla Właścicieli
             </Link>
@@ -47,6 +52,11 @@ const Header = () => {
             <div>
               <Link href="/" className="text-gray-800 font-medium hover:text-primary py-2 block">
                 Przeglądaj Biura
+              </Link>
+            </div>
+            <div>
+              <Link href="/blog" className="text-gray-800 font-medium hover:text-primary py-2 block">
+                Blog
               </Link>
             </div>
             <div>

@@ -76,3 +76,33 @@ export type InsertPricingPackage = z.infer<typeof insertPricingPackageSchema>;
 
 export type Report = z.infer<typeof reportSchema>;                                                                                                                                                      
 export type InsertReport = z.infer<typeof insertReportSchema>;
+
+// Blog Post Schema (using Zod)
+export const blogPostSchema = z.object({
+  id: z.string(), // Partition key
+  slug: z.string().regex(/^[a-z0-9-]+$/, { message: "Slug must be lowercase alphanumeric characters or hyphens" }), // Unique human-readable identifier
+  title: z.string().min(1),
+  content: z.string(), // HTML or Markdown content
+  author: z.string().min(1),
+  createdAt: z.string().datetime({ message: "Invalid ISO 8601 date format for createdAt" }), // ISO 8601 string
+  updatedAt: z.string().datetime({ message: "Invalid ISO 8601 date format for updatedAt" }), // ISO 8601 string
+  featuredImageUrl: z.string().url().optional(),
+  excerpt: z.string().optional(), // Short summary
+
+  // SEO Fields
+  metaTitle: z.string().min(1), // SEO Title (often same as title, but can be optimized)
+  metaDescription: z.string().min(1), // SEO Description
+  keywords: z.array(z.string()).optional(), // SEO Keywords
+});
+
+// Schema for creating a new Blog Post
+export const insertBlogPostSchema = blogPostSchema.omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Replace interface with inferred type
+// export interface BlogPost { ... removed ... }
+export type BlogPost = z.infer<typeof blogPostSchema>;
+export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>; // Add type for inserting

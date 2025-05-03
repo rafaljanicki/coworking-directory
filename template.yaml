@@ -13,6 +13,7 @@ Globals:
         NODE_OPTIONS: --enable-source-maps
         COWORKING_SPACES_TABLE: !Ref CoworkingSpacesTable
         REPORTS_TABLE: !Ref ReportsTable
+        BLOG_POSTS_TABLE: !Ref BlogPostsTable
   Api:
     Cors:
       AllowOrigin: "'*'"
@@ -48,6 +49,32 @@ Resources:
       PrimaryKey:
         Name: id
         Type: Number
+
+  BlogPostsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub '${AWS::StackName}-BlogPostsTable-${Environment}'
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: slug
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH # Partition key
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+      GlobalSecondaryIndexes:
+        - IndexName: slug-index
+          KeySchema:
+            - AttributeName: slug
+              KeyType: HASH # Partition key for GSI
+          Projection:
+            ProjectionType: ALL # Project all attributes
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
 
   # Lambda Functions for each endpoint
   HealthCheckFunction:
@@ -185,6 +212,16 @@ Resources:
           Properties:
             Path: /reports
             Method: OPTIONS
+        BlogPostsOptions:
+          Type: Api
+          Properties:
+            Path: /posts
+            Method: OPTIONS
+        BlogPostBySlugOptions:
+          Type: Api
+          Properties:
+            Path: /posts/{slug}
+            Method: OPTIONS
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -238,6 +275,65 @@ Resources:
       DomainName: !Ref ApiGatewayDomainName
       RestApiId: !Ref ServerlessRestApi
       Stage: Prod
+
+  # NEW: Blog Post Functions
+  GetPostsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: server/handlers/getPosts.handler
+      CodeUri: .
+      Description: Get all blog posts
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref BlogPostsTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /posts
+            Method: GET
+            Auth:
+              ApiKeyRequired: true
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Format: esm
+        Minify: false
+        OutExtension:
+          - .js=.mjs
+        Target: "es2020"
+        Sourcemap: true
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
+
+  GetPostBySlugFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: server/handlers/getPostBySlug.handler
+      CodeUri: .
+      Description: Get a specific blog post by its slug
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref BlogPostsTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /posts/{slug}
+            Method: GET
+            Auth:
+              ApiKeyRequired: true
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Format: esm
+        Minify: false
+        OutExtension:
+          - .js=.mjs
+        Target: "es2020"
+        Sourcemap: true
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
 
 Outputs:
   ApiUrl:

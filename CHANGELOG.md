@@ -1,3 +1,48 @@
+import { format } from "date-fns";
+import { pl } from "date-fns/locale";
+
+## [Unreleased]
+
+### Added
+- Blog feature backend:
+  - `BlogPostsTable` DynamoDB table with `id` (PK) and `slug` (GSI).
+  - `BlogPost` schema added to `shared/schema.ts` **using Zod** (includes title, content, author, dates, featured image, excerpt, and SEO fields: metaTitle, metaDescription, keywords).
+  - `/posts` API endpoint (`GetPostsFunction`) to list all posts.
+  - `/posts/:slug` API endpoint (`GetPostBySlugFunction`) to fetch a single post by its unique slug.
+  - IAM policies and API Gateway routes configured in `template.yaml`.
+  - Storage layer (`server/storage.ts`, `server/mock-storage.ts`) updated with methods to interact with `BlogPostsTable` (`getPosts`, `getPostBySlug`).
+  - Lambda handlers (`server/handlers/getPosts.ts`, `server/handlers/getPostBySlug.ts`) created.
+- Blog feature frontend:
+  - `BlogListPage` (`client/src/pages/BlogListPage.tsx`) using `react-query` to fetch and display posts.
+  - `BlogPostPage` (`client/src/pages/BlogPostPage.tsx`) using `react-query` to fetch post by slug, display content (`dangerouslySetInnerHTML`), and set SEO meta tags using `react-helmet-async`.
+  - `BlogPostCard` component (`client/src/components/BlogPostCard.tsx`) for the list view.
+  - Routing added in `client/src/App.tsx` for `/blog` and `/blog/:slug`.
+  - Navigation links added to `client/src/components/Header.tsx` (desktop and mobile).
+  - Frontend API calls use `apiRequest` from `queryClient.ts`.
+  - Required `@tailwindcss/typography` plugin for styling post content.
+
+### Changed
+- Consolidated `BlogPost` schema into `shared/schema.ts` (removed `shared/blogSchema.ts`) **and converted it to use Zod**.
+- Removed obsolete `PricingPackage` mock data and related filtering logic from `server/mock-storage.ts`.
+
+## [1.0.0] - 2024-05-16
+
+### Added
+- Initial project setup with Coworking Space listing and detail view.
+- AWS SAM backend with Express.js (later refactored).
+- React frontend with Vite, Shadcn UI, Tailwind CSS, Leaflet.
+- Basic filtering for spaces.
+- Report changes functionality.
+
+### Changed
+- Backend refactored from Express.js to individual Lambda handlers per endpoint.
+- Added SEO improvements (meta tags, sitemap, robots.txt, JSON-LD, image optimization, React Helmet).
+- UI updates (removed login/register, localized to Polish).
+- Updated dependencies (`react-helmet-async`, `vite-plugin-image-optimizer` added; `@vendia/serverless-express` removed).
+
+### Fixed
+- Various bug fixes during initial development.
+
 ## 2025-04-21 - Update UI, add "Dla Właścicieli" page and private desks service
 
 Prompt: Could you improve the logo? It's in english and it looks weird. The site's domain is biuracoworking.pl. Also, change the site's title, remove the "O nas" and "Kontakt" tabs. Also, make the filters in polish and the message of "coworking spaces found", make it in polish as well. Make the "Dla wlascicieli" page. Add a service for private desks.

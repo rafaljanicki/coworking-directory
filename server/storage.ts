@@ -6,6 +6,7 @@ import {
 } from "@shared/schema";
 import AWS from "aws-sdk";
 import { MockStorage } from "./mock-storage";
+import { BlogPost } from "@shared/schema";
 
 // Add bounds to filter options
 export interface FilterOptions {
@@ -38,6 +39,10 @@ export interface IStorage {
   createReport(report: InsertReport): Promise<Report>;
   getReports(): Promise<Report[]>;
   updateReportStatus(id: number, status: string): Promise<Report | undefined>;
+
+  // Blog Posts
+  getPosts(): Promise<{ posts: BlogPost[] }>;
+  getPostBySlug(slug: string): Promise<BlogPost | undefined>;
 }
 
 // DynamoDB-based storage implementation
@@ -46,6 +51,7 @@ export class DynamoStorage implements IStorage {
   private tables = {
     spaces: process.env.COWORKING_SPACES_TABLE!,
     reports: process.env.REPORTS_TABLE!,
+    blogPosts: process.env.BLOG_POSTS_TABLE!,
   };
   
   async getSpaces(options: FilterOptions = {}): Promise<{ spaces: CoworkingSpace[] }> {
@@ -385,6 +391,56 @@ export class DynamoStorage implements IStorage {
   async updateReportStatus(_id: number, _status: string): Promise<Report | undefined> {
     throw new Error("updateReportStatus not implemented in DynamoStorage");
   }
+
+  // --- Blog Post Methods --- 
+
+  async getPosts(): Promise<{ posts: BlogPost[] }> {
+    try {
+      const params: AWS.DynamoDB.DocumentClient.ScanInput = {
+        TableName: this.tables.blogPosts,
+        // Add projection expression to fetch only necessary fields for list view later if needed
+        // Add pagination later if the number of posts grows
+      };
+      console.log("Scanning BlogPostsTable...");
+      const result = await this.client.scan(params).promise();
+      const posts = (result.Items || []) as BlogPost[];
+      console.log(`Found ${posts.length} blog posts.`);
+      return { posts };
+    } catch (error) {
+      console.error("DynamoDB error in getPosts:", error);
+      throw new Error("Failed to fetch blog posts from DynamoDB");
+    }
+  }
+
+  async getPostBySlug(slug: string): Promise<BlogPost | undefined> {
+    try {
+      const params: AWS.DynamoDB.DocumentClient.QueryInput = {
+        TableName: this.tables.blogPosts,
+        IndexName: "slug-index", // Use the GSI defined in template.yaml
+        KeyConditionExpression: "slug = :slug",
+        ExpressionAttributeValues: {
+          ":slug": slug,
+        },
+        Limit: 1, // Expecting slug to be unique
+      };
+      console.log(`Querying BlogPostsTable for slug: ${slug}`);
+      const result = await this.client.query(params).promise();
+      
+      if (result.Items && result.Items.length > 0) {
+        const post = result.Items[0] as BlogPost;
+        console.log(`Found post with slug: ${slug}, ID: ${post.id}`);
+        return post;
+      } else {
+        console.log(`No post found with slug: ${slug}`);
+        return undefined;
+      }
+    } catch (error) {
+      console.error(`DynamoDB error in getPostBySlug(${slug}):`, error);
+      throw new Error(`Failed to fetch blog post with slug ${slug} from DynamoDB`);
+    }
+  }
+
+  // --- End Blog Post Methods ---
 }
 
 // Check if we are running locally (IS_OFFLINE is set by serverless-offline)

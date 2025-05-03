@@ -89,6 +89,8 @@ Coworking Offices Directory is a full-stack web application featuring:
 - `GET /spaces/:id/services`: Get services for a specific space
 - `GET /spaces/:id/pricing`: Get pricing for a specific space
 - `POST /reports`: Submit correction reports
+- `GET /posts`: List all blog posts
+- `GET /posts/:slug`: Get specific blog post details by slug
 
 ### Authentication
 - To call the API, include a valid API key in the `x-api-key` header.
