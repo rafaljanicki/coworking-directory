@@ -8,28 +8,32 @@ import { Flag, MapPin, Check, X, Loader2 } from "lucide-react";
 import { CompleteSpace as CompleteSpaceType } from "@/lib/types";
 import ReportChangesModal from "@/components/ReportChangesModal";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import { API_BASE_URL, API_KEY } from '@/lib/config';
+import { API_BASE_URL } from '@/lib/config';
+import { apiRequest } from '@/lib/queryClient';
 import { getServiceInfo } from '@/lib/services';
 
-// Define the fetcher function
+// Define the fetcher function using apiRequest
 const fetchSpaceById = async (spaceId: number): Promise<CompleteSpaceType> => {
   const url = `${API_BASE_URL}/spaces/${spaceId}`;
-  const headers: Record<string, string> = {};
-  if (API_KEY) {
-    headers['x-api-key'] = API_KEY;
-  }
-  
-  const response = await fetch(url, { headers });
-  if (!response.ok) {
-    const errorData = await response.text();
-    console.error(`Fetch error for space ${spaceId} from ${url}:`, response.status, errorData);
-    throw new Error(`Failed to fetch space ${spaceId}: ${response.statusText}`);
-  }
   try {
-    return await response.json();
-  } catch (e) {
-    console.error(`Failed to parse JSON response for space ${spaceId} from ${url}:`, e);
-    throw new Error(`Invalid response received for space ${spaceId}`);
+    // Use apiRequest directly
+    const response = await apiRequest('GET', url);
+    
+    // Check for 404, although apiRequest might also throw
+    if (response.status === 404) {
+      throw new Error(`Space with ID ${spaceId} not found (404)`);
+    }
+
+    // response.json() should work, apiRequest ensures response is ok
+    return await response.json(); 
+  } catch (error) {
+    console.error(`Error fetching space ${spaceId} from ${url}:`, error);
+    // Re-throw the error for react-query to handle
+    // Add specific message if it's not already an Error instance
+    if (error instanceof Error) {
+      throw error; 
+    }
+    throw new Error(`Failed to fetch space ${spaceId}`);
   }
 };
 

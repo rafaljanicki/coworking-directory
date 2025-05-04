@@ -19,7 +19,6 @@ Globals:
       AllowOrigin: "'*'"
       AllowMethods: "'*'"
       AllowHeaders: "'*'"
-      AllowCredentials: false
   
 Parameters:
   ApiDomainName:

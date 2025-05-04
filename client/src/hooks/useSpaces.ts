@@ -3,7 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { CoworkingSpace } from '@shared/schema';
 import { useFilters, initialFilters } from '@/hooks/useFilters';
 import { CompleteSpace, FilterState } from '@/lib/types';
-import { API_BASE_URL, API_KEY } from '@/lib/config';
+import { API_BASE_URL } from '@/lib/config';
+import { apiRequest } from '@/lib/queryClient';
 import type L from 'leaflet';
 
 // API response type
@@ -98,19 +99,10 @@ export const useSpaces = (activeFilters: FilterState, mapBounds: L.LatLngBounds 
 
       const url = `${API_BASE_URL}/spaces${finalQueryString ? `?${finalQueryString}` : ''}`;
       
-      // Include API key header if provided
-      const headers: Record<string, string> = {};
-      if (API_KEY) {
-        headers['x-api-key'] = API_KEY;
-      }
+      // Use apiRequest - no need to manually set headers or check res.ok
+      const res = await apiRequest('GET', url);
       
-      const res = await fetch(url, { headers });
-      
-      if (!res.ok) {
-        throw new Error(`API request failed with status ${res.status}`);
-      }
-      
-      return res.json();
+      return res.json(); // apiRequest returns Response, so call json()
     },
     refetchOnWindowFocus: false, 
     enabled: isEnabled, // Use calculated enabled state
