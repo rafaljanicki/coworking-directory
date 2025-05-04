@@ -106,8 +106,8 @@ const BlogPostPage: React.FC = () => {
 
           {!isLoading && !isError && post && (
             <article>
-              <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
-              <p className="text-gray-500 text-sm mb-6">
+              <h1 className="text-4xl font-bold mb-6">{post.title}</h1>
+              <p className="text-gray-500 text-sm mb-8">
                 By {post.author} on {new Date(post.createdAt).toLocaleDateString()}
                 {post.updatedAt !== post.createdAt && (
                   <span> (Updated: {new Date(post.updatedAt).toLocaleDateString()})</span>
@@ -118,7 +118,7 @@ const BlogPostPage: React.FC = () => {
                 <img 
                   src={post.featuredImageUrl}
                   alt={post.title}
-                  className="w-full h-auto max-h-96 object-cover rounded mb-6"
+                  className="w-full h-auto max-h-96 object-cover rounded mb-8"
                 />
               )}
 
@@ -127,9 +127,9 @@ const BlogPostPage: React.FC = () => {
                 dangerouslySetInnerHTML={{ __html: post.content }}
               />
               
-              <div className="mt-8 pt-4 border-t">
+              <div className="mt-10 pt-6 border-t">
                  <Link href="/blog">
-                  <a className="text-blue-500 hover:underline">&larr; Back to Blog List</a>
+                  <a className="text-blue-500 hover:underline">&larr; Wróć do listy wpisów</a>
                 </Link>
               </div>
             </article>
