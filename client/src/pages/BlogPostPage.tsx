@@ -5,6 +5,8 @@ import { BlogPost } from '@shared/schema';
 import { apiRequest } from '@/lib/queryClient';
 import { API_BASE_URL } from '@/lib/config';
 import { Helmet } from 'react-helmet-async';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 
 const fetchPostBySlug = async (slug: string): Promise<BlogPost | undefined> => {
   // Basic slug validation (optional, but good practice)
@@ -54,77 +56,88 @@ const BlogPostPage: React.FC = () => {
   });
 
   if (!slug) {
-    // Should ideally redirect or show a generic error page
-    return <div className="container mx-auto p-4">Invalid blog post URL.</div>;
+    // Consider rendering Header/Footer even for invalid URL state
+    return (
+      <>
+        <Header />
+        <main className="flex-grow">
+          <div className="container mx-auto p-4">Invalid blog post URL.</div>
+        </main>
+        <Footer />
+      </>
+    );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {isLoading && <p>Loading post...</p>}
-      
-      {/* Handle explicit 404 or error states */} 
-      {isError && !isLoading && (
-        <div className="text-center py-10">
-          <h2 className="text-2xl font-semibold mb-4">Post Not Found</h2>
-          <p className="text-gray-600 mb-4">
-            Sorry, we couldn't find the post you were looking for.
-            {error?.message && !error.message.includes('404') && 
-              <span className="block text-red-500 text-sm mt-2">Error: {error.message}</span>
-            }
-          </p>
-          <Link href="/blog">
-            <a className="text-blue-500 hover:underline">Back to Blog List</a>
-          </Link>
-        </div>
+    <>
+      {/* Helmet goes first but applies to the whole page */}
+      {post && (
+        <Helmet>
+          {/* --- SEO Meta Tags --- */}
+          <title>{post.metaTitle || post.title}</title>
+          <meta name="description" content={post.metaDescription} />
+          {post.keywords && <meta name="keywords" content={post.keywords.join(', ')} />}
+          <meta property="og:title" content={post.metaTitle || post.title} />
+          <meta property="og:description" content={post.metaDescription} />
+          {post.featuredImageUrl && <meta property="og:image" content={post.featuredImageUrl} />}
+          {/* --- End SEO Meta Tags --- */}
+        </Helmet>
       )}
 
-      {!isLoading && !isError && post && (
-        <article>
-          <Helmet>
-            {/* --- SEO Meta Tags --- */}
-            <title>{post.metaTitle || post.title}</title>
-            <meta name="description" content={post.metaDescription} />
-            {post.keywords && <meta name="keywords" content={post.keywords.join(', ')} />}
-            {/* Add Open Graph / Twitter Card tags here if needed */}
-            <meta property="og:title" content={post.metaTitle || post.title} />
-            <meta property="og:description" content={post.metaDescription} />
-            {post.featuredImageUrl && <meta property="og:image" content={post.featuredImageUrl} />}
-            {/* <meta property="og:url" content={window.location.href} /> */}
-            {/* <meta property="og:type" content="article" /> */}
-            {/* <meta name="twitter:card" content="summary_large_image"> */}
-            {/* --- End SEO Meta Tags --- */}
-          </Helmet>
-
-          <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
-          <p className="text-gray-500 text-sm mb-6">
-            By {post.author} on {new Date(post.createdAt).toLocaleDateString()}
-            {post.updatedAt !== post.createdAt && (
-              <span> (Updated: {new Date(post.updatedAt).toLocaleDateString()})</span>
-            )}
-          </p>
-
-          {post.featuredImageUrl && (
-            <img 
-              src={post.featuredImageUrl}
-              alt={post.title}
-              className="w-full h-auto max-h-96 object-cover rounded mb-6"
-            />
+      <Header />
+      <main className="flex-grow">
+        <div className="container mx-auto px-4 py-8">
+          {isLoading && <p>Loading post...</p>}
+          
+          {isError && !isLoading && (
+            <div className="text-center py-10">
+              <h2 className="text-2xl font-semibold mb-4">Post Not Found</h2>
+              <p className="text-gray-600 mb-4">
+                Sorry, we couldn't find the post you were looking for.
+                {error?.message && !error.message.includes('404') && 
+                  <span className="block text-red-500 text-sm mt-2">Error: {error.message}</span>
+                }
+              </p>
+              <Link href="/blog">
+                <a className="text-blue-500 hover:underline">Back to Blog List</a>
+              </Link>
+            </div>
           )}
 
-          {/* Render HTML content safely */}
-          <div 
-            className="prose lg:prose-xl max-w-none" 
-            dangerouslySetInnerHTML={{ __html: post.content }}
-          />
-          
-          <div className="mt-8 pt-4 border-t">
-             <Link href="/blog">
-              <a className="text-blue-500 hover:underline">&larr; Back to Blog List</a>
-            </Link>
-          </div>
-        </article>
-      )}
-    </div>
+          {!isLoading && !isError && post && (
+            <article>
+              <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
+              <p className="text-gray-500 text-sm mb-6">
+                By {post.author} on {new Date(post.createdAt).toLocaleDateString()}
+                {post.updatedAt !== post.createdAt && (
+                  <span> (Updated: {new Date(post.updatedAt).toLocaleDateString()})</span>
+                )}
+              </p>
+
+              {post.featuredImageUrl && (
+                <img 
+                  src={post.featuredImageUrl}
+                  alt={post.title}
+                  className="w-full h-auto max-h-96 object-cover rounded mb-6"
+                />
+              )}
+
+              <div 
+                className="prose lg:prose-xl max-w-none" 
+                dangerouslySetInnerHTML={{ __html: post.content }}
+              />
+              
+              <div className="mt-8 pt-4 border-t">
+                 <Link href="/blog">
+                  <a className="text-blue-500 hover:underline">&larr; Back to Blog List</a>
+                </Link>
+              </div>
+            </article>
+          )}
+        </div>
+      </main>
+      <Footer />
+    </>
   );
 };
 

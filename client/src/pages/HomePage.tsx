@@ -11,6 +11,8 @@ import { useSpaces } from "@/hooks/useSpaces";
 import { CoworkingSpace } from "@shared/schema";
 import type L from 'leaflet';
 import { useFilters } from "@/hooks/useFilters";
+import Footer from "@/components/Footer";
+import { Helmet } from 'react-helmet-async';
 
 // Simple debounce hook (copied from MapView)
 const useDebouncedCallback = <T extends (...args: any[]) => any>(
@@ -38,10 +40,10 @@ const HomePage = () => {
   const isMobile = useIsMobile();
   const { 
     filters, 
-    activeFilters,
-    updateFilter, 
-    resetFilters, 
-    applyFilters 
+    updateFilter,
+    resetFilters,
+    applyFilters,
+    activeFilters
   } = useFilters();
   const [mapBounds, setMapBounds] = useState<L.LatLngBounds | null>(null);
   const [selectedSpaceId, setSelectedSpaceId] = useState<number | null>(null);
@@ -56,31 +58,26 @@ const HomePage = () => {
     error, 
   } = useSpaces(activeFilters, mapBounds);
   
-  // Wrap handler in useCallback to stabilize its reference
   const handleSpaceSelect = useCallback((id: number) => {
     setSelectedSpaceId(id);
     setIsDetailModalOpen(true);
-  }, []); // Dependencies: setSelectedSpaceId, setIsDetailModalOpen (stable)
+  }, []);
   
   const handleCloseModal = () => {
     setIsDetailModalOpen(false);
     setSelectedSpaceId(null);
   };
   
-  // Wrap callback for stability
   const toggleMapView = useCallback(() => {
     setIsMapVisible(!isMapVisible);
   }, [isMapVisible]);
   
-  // Wrap callback for stability
   const toggleMapExpand = useCallback(() => {
     setIsMapExpanded(!isMapExpanded);
   }, [isMapExpanded]);
 
-  // Extract unique cities for SEO
   useEffect(() => {
     if (spaces && spaces.length > 0) {
-      // Get unique cities using filter and indexOf
       const uniqueCities = spaces
         .map(space => space.city)
         .filter((city, index, self) => self.indexOf(city) === index);
@@ -88,21 +85,26 @@ const HomePage = () => {
     }
   }, [spaces]);
   
-  // Raw state setter
   const updateBoundsState = useCallback((bounds: L.LatLngBounds) => {
     setMapBounds(bounds);
   }, []);
   
-  // Debounced version of the state setter to pass to MapView
   const handleBoundsChange = useDebouncedCallback(updateBoundsState, 1000);
   
+  const handleSelectSpace = (id: number | null) => {
+    setSelectedSpaceId(id);
+  };
+
   return (
     <>
-      <HomePageSEO spaces={spaces?.length || 0} cities={cities} />
+      <Helmet>
+         <title>Biura Coworking - Znajdź Przestrzenie Coworkingowe w Polsce</title>
+         <meta name="description" content="Przeglądaj i filtruj najlepsze przestrzenie coworkingowe w Polsce. Znajdź idealne biuro dla siebie lub swojego zespołu." />
+         {/* Add other relevant meta tags if needed */}
+       </Helmet>
       <Header />
       
       <div className="container mx-auto px-4 py-4">
-        {/* Mobile Filters Bar - only shown on mobile */}
         <div className="md:hidden mb-4">
           <FiltersBar 
             onToggleMap={toggleMapView}
@@ -115,7 +117,6 @@ const HomePage = () => {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-          {/* Left column - filters */}
           <div className="md:col-span-1 hidden md:block">
             <div className="sticky top-24">
               <FiltersBar 
@@ -129,9 +130,7 @@ const HomePage = () => {
             </div>
           </div>
           
-          {/* Right column - spaces and map */}
           <div className="md:col-span-4">
-            {/* Mobile toggle button */}
             <div className="md:hidden flex justify-end mb-4">
               <Button
                 variant="outline"
@@ -143,7 +142,6 @@ const HomePage = () => {
               </Button>
             </div>
             
-            {/* Desktop - header */}
             <div className="hidden md:block mb-4">
               <div className="bg-white rounded-lg shadow-sm p-4 flex justify-between items-center">
                 <h2 className="font-semibold text-lg">
@@ -160,7 +158,6 @@ const HomePage = () => {
               </div>
             </div>
             
-            {/* Map (when visible) */}
             {isMapVisible && (
               <div className={`w-full ${isMapExpanded ? 'h-[calc(100vh-250px)]' : 'h-[calc(25vh)]'} mb-4 transition-all duration-300`}>
                 <MapView 
@@ -174,20 +171,20 @@ const HomePage = () => {
               </div>
             )}
             
-            {/* Spaces list - always shown except on mobile when map is visible */}
             <div className={isMobile && isMapVisible ? 'hidden' : 'block'}>
               <SpacesList 
                 spaces={spaces} 
                 isLoading={isLoading} 
                 error={error} 
-                onSpaceClick={handleSpaceSelect} 
+                onSpaceClick={handleSelectSpace}
               />
             </div>
           </div>
         </div>
       </div>
       
-      {/* Space Detail Modal */}
+      <Footer />
+      
       <SpaceDetailModal 
         isOpen={isDetailModalOpen}
         spaceId={selectedSpaceId}
