@@ -107,6 +107,66 @@ Coworking Offices Directory is a full-stack web application featuring:
   ```
 - API Gateway URL is available under the "ApiUrl" output of the stack.
 
+## Project Structure and AI Instructions
+
+This section provides an overview of the project structure and guidance for AI models interacting with the codebase.
+
+### Directory Listing
+
+```
+website
+├── .cursor/            # Cursor IDE specific settings and configurations
+│   └── rules/          # Custom rules or configurations for Cursor
+├── .github/            # GitHub specific configurations
+│   └── workflows/      # GitHub Actions workflow definitions (e.g., CI/CD)
+├── .vite/              # Vite build cache and temporary files
+│   └── deps/           # Pre-bundled dependencies by Vite
+├── client/             # Frontend React application source code
+│   ├── public/         # Static assets served directly by the web server
+│   ├── src/            # Main source code for the React application
+│   │   ├── components/ # Reusable React components
+│   │   │   └── ui/     # UI specific components (likely from a UI library like shadcn/ui)
+│   │   ├── hooks/      # Custom React hooks
+│   │   ├── lib/        # Utility functions, configuration, API clients
+│   │   ├── pages/      # Page-level components representing different routes/views
+│   │   ├── index.html      # Entry point HTML file for the Vite application
+│   │   └── vite-env.d.ts   # TypeScript definitions for Vite environment variables
+├── dist/               # Build output directory for the frontend application
+│   ├── public/         # Copied static assets from client/public
+│   │   └── assets/     # Compiled and optimized assets (JS, CSS, images)
+├── server/             # Backend Node.js/Express application source code
+│   └── handlers/       # Route handlers or controllers for API endpoints
+├── shared/             # Code shared between the client and server (e.g., types, schemas)
+├── .gitignore          # Specifies intentionally untracked files that Git should ignore
+├── CHANGELOG.md        # Log of changes made to the project over time
+├── CLAUDE.md           # Specific instructions or context for the Claude AI model
+├── coworking_directory_thumbnail.png # Project thumbnail image
+├── dev_env.json        # Development environment configuration (if used)
+├── offices.csv         # CSV data file, likely containing office information
+├── package-lock.json   # Records exact versions of dependencies installed
+├── package.json        # Project metadata and dependencies for Node.js/npm
+├── postcss.config.js   # Configuration file for PostCSS (CSS processor)
+├── README.md           # This file: project overview, setup, usage instructions
+├── samconfig.toml      # Configuration file for AWS SAM CLI deployments
+├── tailwind.config.ts  # Configuration file for Tailwind CSS
+├── template.yaml       # AWS SAM template defining serverless resources (API Gateway, Lambda)
+├── theme.json          # Theme configuration, possibly for UI components or styling
+├── tsconfig.json       # TypeScript compiler configuration for the project root
+└── vite.config.ts      # Vite configuration file for the frontend build process
+```
+
+### Instructions for AI Models
+
+1.  **Understand the Stack:** This is a full-stack TypeScript project using React (Vite) for the frontend and Node.js/Express (run via AWS SAM) for the backend. Shared types/schemas are in the `shared/` directory.
+2.  **Client-Side:** Frontend code is in `client/src`. Components are in `components/`, pages (routes) in `pages/`, utility functions/API logic in `lib/`, and custom hooks in `hooks/`. Styling is primarily handled by Tailwind CSS (`tailwind.config.ts`) potentially augmented by a UI library configured via `theme.json` and components in `client/src/components/ui`. State management likely uses React Query (`@tanstack/react-query`). Routing is handled by `wouter`.
+3.  **Server-Side:** Backend code is in `server/`. It's an Express application designed to run as an AWS Lambda function defined in `template.yaml`. API route logic is likely within `server/handlers/`.
+4.  **Shared Code:** The `shared/` directory contains code (like TypeScript types or Zod schemas) used by both the client and server to ensure consistency.
+5.  **API Interaction:** The frontend interacts with the backend API. The base URL and API key are configured in `client/src/lib/config.ts` and potentially via environment variables (`VITE_API_KEY`). API request logic is likely centralized in `client/src/lib/queryClient.ts`.
+6.  **Deployment:** The backend is deployed using AWS SAM (`template.yaml`, `samconfig.toml`). The frontend is built using Vite (`vite.config.ts`) and the output is in the `dist/` directory.
+7.  **Dependencies:** Use `package.json` and `package-lock.json` to understand project dependencies.
+8.  **Data:** The `offices.csv` file might be used for initial data seeding or be part of the backend data source logic.
+9.  **Memory/Context:** Refer to previous interactions and attached file contents for specific context on ongoing tasks. Use the available MCP tools for memory management, file reading, searching, and editing.
+
 ## Contributing
 
 Contributions are welcome! Please open issues or submit pull requests.

@@ -4,3 +4,4 @@ dist
 .aws-sam
 *.local
 dev_env.json
+.DS_Store
