@@ -73,6 +73,10 @@ export default $config({
         // Pass the API endpoint to the Vite app
         VITE_API_URL: api.url,
       },
+      invalidation: {
+        paths: "all",
+        wait: true
+      },
       // If you have a custom domain:
     //   domain: $app.stage === "production" ? "biuracoworking.pl" : `dev.biuracoworking.pl`,
     });

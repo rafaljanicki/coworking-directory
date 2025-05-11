@@ -15,6 +15,8 @@ export async function apiRequest(
 ): Promise<Response> {
   // Build headers with optional API key
   const headers: Record<string, string> = {};
+  console.log(process.env.VITE_API_URL);
+  console.log(import.meta.env);
   if (data) {
     headers["Content-Type"] = "application/json";
   }

@@ -14,7 +14,6 @@ export const usePosts = () => {
   } = useQuery<PostsApiResponse, Error>({
     queryKey: ['blogPosts'], // Unique query key for blog posts
     queryFn: async () => {
-      console.log(process.env.VITE_API_URL);
       const url = `${API_BASE_URL}/posts`;
       
       // Use apiRequest to handle fetching and error checking
