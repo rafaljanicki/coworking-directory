@@ -5,26 +5,6 @@
 
 declare module "sst" {
   export interface Resource {
-    "BlogPosts": {
-      "name": string
-      "type": "sst.aws.Dynamo"
-    }
-    "CoworkingSpaces": {
-      "name": string
-      "type": "sst.aws.Dynamo"
-    }
-    "Reports": {
-      "name": string
-      "type": "sst.aws.Dynamo"
-    }
-    "myApi": {
-      "type": "sst.aws.ApiGatewayV2"
-      "url": string
-    }
-    "viteSite": {
-      "type": "sst.aws.StaticSite"
-      "url": string
-    }
   }
 }
 /// <reference path="sst-env.d.ts" />

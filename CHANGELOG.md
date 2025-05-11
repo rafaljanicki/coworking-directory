@@ -24,6 +24,16 @@ import { pl } from "date-fns/locale";
 ### Changed
 - Consolidated `BlogPost` schema into `shared/schema.ts` (removed `shared/blogSchema.ts`) **and converted it to use Zod**.
 - Removed obsolete `PricingPackage` mock data and related filtering logic from `server/mock-storage.ts`.
+- **Migrated project from AWS SAM to SST (Serverless Stack Toolkit) v3.**
+  - Replaced `template.yaml` and `samconfig.toml` with `sst.config.ts` for infrastructure definition and deployment.
+  - Updated backend Lambda handlers in `server/` to integrate with SST, including resource binding for DynamoDB tables (e.g., `Table.Spaces.tableName`).
+  - Refactored `server/storage.ts` to use AWS SDK v3 and SST table name bindings.
+  - Updated `package.json` scripts to use SST commands (`npx sst dev`, `npx sst build`, `npx sst deploy`).
+  - Migrated to modern SST v3 configuration style using components like `sst.aws.Dynamo`, `sst.aws.ApiGatewayV2`, and `sst.aws.StaticSite`.
+  - Updated `vite` to `^6.3.5` and `@vitejs/plugin-react` to `^4.4.1`.
+  - Added `sst` (version `^3.14.12`) as a dev dependency.
+  - Removed obsolete files: `template.yaml`, `samconfig.toml`, `server/dev-api-key.json`.
+- Updated `README.md` to reflect the new SST-based project structure, setup, development, and deployment procedures.
 
 ## [1.0.0] - 2024-05-16
 
