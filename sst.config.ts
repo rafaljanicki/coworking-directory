@@ -1,5 +1,4 @@
 /// <reference path="./.sst/platform/config.d.ts" />
-
 export default $config({
   app(input) {
     return {
@@ -10,34 +9,38 @@ export default $config({
         aws: {
           region: "eu-central-1", // As per your example
         },
+        cloudflare: "6.1.2",
       },
     };
   },
   async run() {
     const coworkingSpacesTable = new sst.aws.Dynamo("CoworkingSpaces", {
-      fields: { id: "string" },
+      fields: { id: "number" },
       primaryIndex: { hashKey: "id" },
     });
-
     const reportsTable = new sst.aws.Dynamo("Reports", {
-      fields: { id: "string" },
+      fields: { id: "number" },
       primaryIndex: { hashKey: "id" },
     });
-
     const blogPostsTable = new sst.aws.Dynamo("BlogPosts", {
       fields: { id: "string" },
       primaryIndex: { hashKey: "id" },
     });
-
     const api = new sst.aws.ApiGatewayV2("myApi", {
       link: [coworkingSpacesTable, reportsTable, blogPostsTable],
       cors: true, // Enable CORS for all routes
+      domain: {
+        name: "api.biuracoworking.pl",
+        dns: sst.cloudflare.dns()
+      },
       transform: {
         route: {
           // @ts-ignore - Opts type might not be perfectly inferred here but structure is standard for SST
           handler: (args, opts) => {
-            if (typeof args.handler === "string") { // Ensure handler is defined as a path
-              const currentEnv = typeof args.environment === 'object' ? args.environment : {};
+            if (typeof args.handler === "string") {
+              // Ensure handler is defined as a path
+              const currentEnv =
+                typeof args.environment === "object" ? args.environment : {};
               args.environment = {
                 ...currentEnv,
                 COWORKING_SPACES_TABLE_NAME: coworkingSpacesTable.name,
@@ -45,11 +48,10 @@ export default $config({
                 BLOG_POSTS_TABLE_NAME: blogPostsTable.name,
               };
             }
-          }
-        }
-      }
+          },
+        },
+      },
     });
-
     // Coworking Spaces
     api.route("GET /spaces", "server/handlers/getSpaces.handler");
     api.route("GET /spaces/{id}", "server/handlers/getSpaceById.handler");
@@ -62,7 +64,6 @@ export default $config({
     // Image Upload
     // Auth
     api.route("GET /health", "server/handlers/healthCheck.handler");
-
     const site = new sst.aws.StaticSite("viteSite", {
       path: ".",
       build: {
@@ -75,15 +76,16 @@ export default $config({
       },
       invalidation: {
         paths: "all",
-        wait: true
+        wait: true,
       },
-      // If you have a custom domain:
-    //   domain: $app.stage === "production" ? "biuracoworking.pl" : `dev.biuracoworking.pl`,
+      // domain: {
+      //   name: "biuracoworking.pl",
+      //   dns: sst.cloudflare.dns()
+      // }
     });
-
     return {
       ApiEndpoint: api.url,
       SiteUrl: site.url,
     };
   },
-}); 
+});
