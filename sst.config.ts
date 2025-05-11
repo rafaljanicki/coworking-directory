@@ -78,10 +78,10 @@ export default $config({
         paths: "all",
         wait: true,
       },
-      // domain: {
-      //   name: "biuracoworking.pl",
-      //   dns: sst.cloudflare.dns()
-      // }
+      domain: {
+        name: "biuracoworking.pl",
+        dns: sst.cloudflare.dns()
+      }
     });
     return {
       ApiEndpoint: api.url,
