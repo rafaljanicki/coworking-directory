@@ -1,8 +1,6 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { CoworkingSpace } from '@shared/schema';
-import { useFilters, initialFilters } from '@/hooks/useFilters';
-import { CompleteSpace, FilterState } from '@/lib/types';
+import { FilterState } from '@/lib/types';
 import { API_BASE_URL } from '@/lib/config';
 import { apiRequest } from '@/lib/queryClient';
 import type L from 'leaflet';
