@@ -1,7 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { FilterState } from '@/lib/types';
-import { queryClient } from '@/lib/queryClient';
-import { API_BASE_URL } from '@/lib/config';
 
 // Default filter state
 export const initialFilters: FilterState = {

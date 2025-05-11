@@ -7,8 +7,10 @@ on:
     branches:
       - main
 jobs:
-  deploy_backend:
+  deploy:
+    name: Deploy
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
       - uses: aws-actions/configure-aws-credentials@v4
