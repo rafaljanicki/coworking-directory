@@ -14,7 +14,7 @@ export default $config({
     };
   },
   async run() {
-    const coworkingSpacesTable = new sst.aws.Dynamo("CoworkingSpaces", {
+    const coworkingSpacesTable = new sst.aws.Dynamo("Spaces", {
       fields: { id: "number" },
       primaryIndex: { hashKey: "id" },
     });
