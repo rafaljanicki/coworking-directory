@@ -18,33 +18,13 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: '22.x'
+
       - name: Install dependencies
-        run: npm i
-      - name: Build
-        run: npm run build:backend
-      - name: Install AWS SAM CLI
-        run: pip3 install aws-sam-cli
-      - name: Deploy SAM application
-        run: sam deploy --config-env production --no-confirm-changeset --no-fail-on-empty-changeset
-  deploy_frontend:
-    runs-on: ubuntu-latest
-    env:
-      VITE_API_KEY: ${{ secrets.API_KEY }}
-      VITE_API_BASE_URL: ${{ secrets.API_BASE_URL }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '22.x'
-      - name: Install dependencies
-        run: npm i
-      - uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          aws-region: ${{ secrets.AWS_REGION }}
-      - name: Build
-        run: npm run build:frontend
-      - name: Deploy static website to S3
-        run: aws s3 sync dist/public s3://${{ secrets.FRONTEND_S3_BUCKET }} --delete
-      - name: Invalidate Cloudfront
-        run: aws cloudfront create-invalidation --distribution-id ${{ secrets.CDN_ID }} --paths "/*"
+        run: npm ci
+
+      - name: Deploy SST application to production
+        run: npx sst deploy --stage production
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_DEFAULT_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_DEFAULT_ACCOUNT_ID }}

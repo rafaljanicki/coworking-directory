@@ -5,3 +5,5 @@ dist
 *.local
 dev_env.json
 .DS_Store
+.sst
+.env
