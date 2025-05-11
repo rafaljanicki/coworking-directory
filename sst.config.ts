@@ -80,7 +80,8 @@ export default $config({
       },
       domain: {
         name: "biuracoworking.pl",
-        dns: sst.cloudflare.dns()
+        dns: sst.cloudflare.dns(),
+        redirects: ["www.biuracoworking.pl"],
       }
     });
     return {

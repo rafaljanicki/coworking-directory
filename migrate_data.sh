@@ -6,14 +6,14 @@ TABLE_FROM=$1
 TABLE_TO=$2
 
 # read
-aws dynamodb scan \
-  --table-name "$TABLE_FROM" \
-  --output json \
- | jq "[ .Items[] | { PutRequest: { Item: . } } ]" \
- > "$TABLE_FROM-dump.json"
+# aws dynamodb scan \
+#   --table-name "$TABLE_FROM" \
+#   --output json \
+#  | jq "[ .Items[] | { PutRequest: { Item: . } } ]" \
+#  > "$TABLE_FROM-dump.json"
 
-table_size="$(cat "${TABLE_FROM}-dump.json" | jq '. | length')"
-echo "table size: ${table_size}"
+# table_size="$(cat "${TABLE_FROM}-dump.json" | jq '. | length')"
+# echo "table size: ${table_size}"
 
 # write in batches of 25
 for i in $(seq 0 25 $table_size); do
@@ -26,4 +26,4 @@ done
 
 
 # clean up
-rm "${TABLE_FROM}-dump.json"
+# rm "${TABLE_FROM}-dump.json"
