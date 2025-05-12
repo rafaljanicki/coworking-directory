@@ -39,8 +39,8 @@ const BlogListPage: React.FC = () => {
         <div className="container mx-auto px-4 py-8">
           <h1 className="text-3xl font-bold mb-6">Blog</h1>
           
-          {isLoading && <p>Loading posts...</p>}
-          {error && <p className="text-red-500">Error loading posts: {error.message}</p>}
+          {isLoading && <p>Ładowanie wpisów...</p>}
+          {error && <p className="text-red-500">Błąd ładowania wpisów: {error.message}</p>}
           
           {posts && posts.length > 0 && (
             <div>

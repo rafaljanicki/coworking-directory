@@ -14,7 +14,7 @@ const BlogPostCard: React.FC<BlogPostCardProps> = ({ post }) => {
           <a className="block aspect-video overflow-hidden">
             <img
               src={post.featuredImageUrl}
-              alt={`Featured image for ${post.title}`}
+              alt={`Zdjęcie wyróżniające dla wpisu: ${post.title}`}
               className="h-full w-full object-cover transition-transform duration-300 ease-in-out hover:scale-105"
             />
           </a>
@@ -29,7 +29,7 @@ const BlogPostCard: React.FC<BlogPostCardProps> = ({ post }) => {
           </Link>
         </h2>
         <p className="mb-3 text-sm text-muted-foreground">
-          By <span className="font-medium">{post.author}</span> on {new Date(post.createdAt).toLocaleDateString()}
+          Autor: <span className="font-medium">{post.author}</span> | Data publikacji: {new Date(post.createdAt).toLocaleDateString('pl-PL')}
         </p>
         {post.excerpt && (
           <p className="mb-4 text-muted-foreground line-clamp-3">
@@ -38,7 +38,7 @@ const BlogPostCard: React.FC<BlogPostCardProps> = ({ post }) => {
         )}
         <Link href={`/blog/${post.slug}`}>
           <a className="inline-flex items-center font-medium text-primary hover:underline">
-            Read more
+            Czytaj więcej
             <svg className="ml-1 h-4 w-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd"></path></svg>
           </a>
         </Link>
