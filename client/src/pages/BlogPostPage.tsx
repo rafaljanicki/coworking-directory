@@ -45,7 +45,7 @@ const BlogPostPage: React.FC = () => {
     queryKey: ['blogPost', slug], 
     queryFn: () => fetchPostBySlug(slug!),
     enabled: !!slug, // Only run query if slug is available
-    retry: (failureCount, error) => {
+    retry: (failureCount: number, error: Error) => {
        // Don't retry on 404s which might be represented as errors
       if (error.message.includes('404') || error.message.includes('Not Found')) {
         return false;
@@ -87,19 +87,19 @@ const BlogPostPage: React.FC = () => {
       <Header />
       <main className="flex-grow">
         <div className="container mx-auto px-4 py-8">
-          {isLoading && <p>Loading post...</p>}
+          {isLoading && <p>Ładowanie wpisu...</p>}
           
           {isError && !isLoading && (
             <div className="text-center py-10">
-              <h2 className="text-2xl font-semibold mb-4">Post Not Found</h2>
+              <h2 className="text-2xl font-semibold mb-4">Nie znaleziono wpisu</h2>
               <p className="text-gray-600 mb-4">
-                Sorry, we couldn't find the post you were looking for.
+                Przepraszamy, nie udało się znaleźć szukanego wpisu.
                 {error?.message && !error.message.includes('404') && 
-                  <span className="block text-red-500 text-sm mt-2">Error: {error.message}</span>
+                  <span className="block text-red-500 text-sm mt-2">Błąd: {error.message}</span>
                 }
               </p>
               <Link href="/blog">
-                <a className="text-blue-500 hover:underline">Back to Blog List</a>
+                <a className="text-blue-500 hover:underline">Powrót do listy wpisów</a>
               </Link>
             </div>
           )}
@@ -108,9 +108,9 @@ const BlogPostPage: React.FC = () => {
             <article>
               <h1 className="text-4xl font-bold mb-6">{post.title}</h1>
               <p className="text-gray-500 text-sm mb-8">
-                By {post.author} on {new Date(post.createdAt).toLocaleDateString()}
+                Autor: {post.author} | Data publikacji: {new Date(post.createdAt).toLocaleDateString('pl-PL')}
                 {post.updatedAt !== post.createdAt && (
-                  <span> (Updated: {new Date(post.updatedAt).toLocaleDateString()})</span>
+                  <span> (Aktualizacja: {new Date(post.updatedAt).toLocaleDateString('pl-PL')})</span>
                 )}
               </p>
 

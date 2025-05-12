@@ -59,7 +59,7 @@ export default $config({
     api.route("POST /reports", "server/handlers/createReport.handler");
     // Blog Posts
     api.route("GET /posts", "server/handlers/getPosts.handler");
-    api.route("GET /posts/{id}", "server/handlers/getPostBySlug.handler");
+    api.route("GET /posts/{slug}", "server/handlers/getPostBySlug.handler");
     // Search
     // Image Upload
     // Auth

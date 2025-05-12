@@ -89,6 +89,21 @@ const mockBlogPosts: BlogPost[] = [
     metaDescription: "Learn about the advantages of using shared office spaces.",
     keywords: ["coworking", "benefits", "productivity"],
   },
+  // Added Polish blog post for the required slug
+  {
+    id: "post-3",
+    slug: "coworking-dla-freelancera-korzysci-polska",
+    title: "Coworking dla freelancera – korzyści w Polsce",
+    content: `<p>Coworking to idealne rozwiązanie dla freelancerów, którzy szukają inspirującego miejsca do pracy poza domem. W Polsce coraz więcej osób decyduje się na wynajem biurka w przestrzeni coworkingowej, aby zwiększyć swoją produktywność i nawiązać nowe kontakty biznesowe.</p><ul><li><strong>Elastyczność</strong> – możesz pracować kiedy chcesz i jak chcesz.</li><li><strong>Networking</strong> – poznajesz innych profesjonalistów i potencjalnych klientów.</li><li><strong>Profesjonalne warunki</strong> – szybki internet, drukarki, sale konferencyjne.</li></ul><p>Dowiedz się więcej na naszym blogu!</p>`,
+    author: "Anna Kowalska",
+    createdAt: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
+    updatedAt: new Date(Date.now() - 1800000).toISOString(), // 30 minutes ago
+    featuredImageUrl: "https://via.placeholder.com/800x400?text=Coworking+Freelancer",
+    excerpt: "Poznaj najważniejsze korzyści coworkingu dla freelancerów w Polsce.",
+    metaTitle: "Coworking dla freelancera – korzyści w Polsce | Blog",
+    metaDescription: "Dowiedz się, dlaczego coworking to świetny wybór dla freelancerów w Polsce. Przeczytaj o elastyczności, networkingu i profesjonalnych warunkach.",
+    keywords: ["coworking", "freelancer", "korzyści", "Polska"],
+  },
 ];
 
 // Mock implementation of IStorage for development
