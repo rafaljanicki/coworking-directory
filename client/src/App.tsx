@@ -6,6 +6,9 @@ import DetailPage from "@/pages/DetailPage";
 import ForOwnersPage from "@/pages/ForOwnersPage";
 import BlogListPage from "@/pages/BlogListPage";
 import BlogPostPage from "@/pages/BlogPostPage";
+import OfertaWarszawaPage from "@/pages/OfertaWarszawaPage";
+import OfertaKrakowPage from "@/pages/OfertaKrakowPage";
+import OfertaGdanskPage from "@/pages/OfertaGdanskPage";
 import { HelmetProvider } from 'react-helmet-async';
 import { useEffect } from 'react';
 
@@ -17,6 +20,9 @@ function Router() {
       <Route path="/blog/:slug" component={BlogPostPage} />
       <Route path="/space/:id" component={DetailPage} />
       <Route path="/dla-wlascicieli" component={ForOwnersPage} />
+      <Route path="/oferta/warszawa" component={OfertaWarszawaPage} />
+      <Route path="/oferta/krakow" component={OfertaKrakowPage} />
+      <Route path="/oferta/gdansk" component={OfertaGdanskPage} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -26,12 +32,12 @@ function App() {
   const [location] = useLocation();
 
   useEffect(() => {
-    console.log('App useEffect: location changed to', location);
+    // console.log('App useEffect: location changed to', location);
     if (window.goatcounter) {
-      console.log('GoatCounter script loaded, attempting to count page view');
+      // console.log('GoatCounter script loaded, attempting to count page view');
       window.goatcounter.count();
     } else {
-      console.log('GoatCounter script not loaded (window.goatcounter is undefined)');
+      // console.log('GoatCounter script not loaded (window.goatcounter is undefined)');
     }
   }, [location]); // Re-run effect when location changes
 
