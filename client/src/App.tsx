@@ -12,7 +12,15 @@ import OfertaGdanskPage from "@/pages/OfertaGdanskPage";
 import { HelmetProvider } from 'react-helmet-async';
 import { useEffect } from 'react';
 
-function Router() {
+// Renamed from Router to AppRouter to avoid confusion with wouter's own <Router>
+// and to encapsulate the useLocation hook for the Switch.
+function AppRouter() {
+  const [location] = useLocation();
+
+  // Diagnostic log to observe what wouter perceives as the current location.
+  // This would be visible in the browser's console during development/testing.
+  console.log("[AppRouter] Current location from wouter:", location);
+
   return (
     <Switch>
       <Route path="/" component={HomePage} />
@@ -29,22 +37,26 @@ function Router() {
 }
 
 function App() {
-  const [location] = useLocation();
+  // It's good for components that need location (like analytics) 
+  // to have their own instance of useLocation if they are separate from the router tree.
+  const [appLocationForAnalytics] = useLocation(); 
 
   useEffect(() => {
-    // console.log('App useEffect: location changed to', location);
+    // console.log('App useEffect: GoatCounter location changed to', appLocationForAnalytics);
     if (window.goatcounter) {
-      // console.log('GoatCounter script loaded, attempting to count page view');
-      window.goatcounter.count();
+      // console.log('GoatCounter script loaded, attempting to count page view for path:', appLocationForAnalytics);
+      window.goatcounter.count({
+        path: appLocationForAnalytics, // Explicitly pass the path to GoatCounter
+      });
     } else {
       // console.log('GoatCounter script not loaded (window.goatcounter is undefined)');
     }
-  }, [location]); // Re-run effect when location changes
+  }, [appLocationForAnalytics]); // Re-run effect when location changes
 
   return (
     <HelmetProvider>
       <div className="min-h-screen flex flex-col">
-        <Router />
+        <AppRouter /> {/* Use the new AppRouter component */}
         <Toaster />
       </div>
     </HelmetProvider>
