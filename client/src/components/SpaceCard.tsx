@@ -30,8 +30,8 @@ const SpaceCard = ({ space, onClick }: SpaceCardProps) => {
         <div className="md:flex-shrink-0">
           <img 
             className="h-48 w-full object-cover md:w-48" 
-            src={space.imageUrl || 'https://via.placeholder.com/400x300?text=No+Image'} 
-            alt={`${space.name} Przestrzeń Coworkingowa`} 
+            src={space.imageUrl || '/logo.png'} 
+            alt={space.imageUrl ? `${space.name} Przestrzeń Coworkingowa` : 'Brak zdjęcia obiektu - logo BiuraCoworking.pl'} 
             itemProp="image"
           />
         </div>
