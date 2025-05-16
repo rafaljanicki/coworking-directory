@@ -6,10 +6,9 @@
   "scripts": {
     "dev": "sst dev",
     "stop": "echo \"Use Ctrl+C in 'sst dev' terminal or 'sst remove --stage <stage>' to stop/remove\"",
-    "build:frontend": "vite build",
-    "build": "sst build",
-    "start": "echo \"Use 'sst deploy' to deploy and access the site. For local preview of frontend build, use 'npm run build:frontend && vite preview --outDir client/dist'\"",
-    "check": "tsc"
+    "build": "vite build",
+    "sst:build": "sst build",
+    "start": "echo \"Use 'sst deploy' to deploy and access the site. For local preview of frontend build, use 'npm run build:frontend && vite preview --outDir client/dist'\""
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.0.0",

@@ -4,15 +4,22 @@ import Footer from '@/components/Footer';
 import SpacesList from '@/components/SpacesList'; // Assuming SpacesList can be filtered or we adapt its usage
 import { useSpaces } from '@/hooks/useSpaces'; // Assuming this hook can fetch/filter by city
 import { CoworkingSpace } from '@shared/schema';
-import SEO from '@/components/SEO'; // For meta tags
+import { BaseSEO as SEO } from '@/components/SEO'; // For meta tags
 
 const CoworkingListingWarszawaPage: React.FC = () => {
-  const { spaces, isLoading, error } = useSpaces(); // This hook likely fetches all spaces
+  const { spaces, isLoading, error } = useSpaces(
+    { location: 'warszawa', services: [] }, // Added activeFilters
+    null // Added mapBounds
+  );
   const [warsawSpaces, setWarsawSpaces] = useState<CoworkingSpace[]>([]);
 
   useEffect(() => {
     if (spaces) {
-      setWarsawSpaces(spaces.filter(space => space.city.toLowerCase() === 'warszawa'));
+      // Filtering is now handled by the hook if location is part of activeFilters,
+      // but if the hook is generic, client-side filtering might still be desired
+      // for this specific page if it fetches all spaces initially.
+      // For this page, we expect spaces to be pre-filtered by the hook.
+      setWarsawSpaces(spaces); 
     }
   }, [spaces]);
 
@@ -61,7 +68,12 @@ const CoworkingListingWarszawaPage: React.FC = () => {
         {isLoading && <p>Ładowanie przestrzeni...</p>}
         {error && <p>Wystąpił błąd podczas ładowania przestrzeni: {error.message}</p>}
         {!isLoading && !error && warsawSpaces.length > 0 && (
-          <SpacesList spaces={warsawSpaces} />
+          <SpacesList 
+            spaces={warsawSpaces} 
+            isLoading={isLoading} // Pass isLoading
+            error={error} // Pass error
+            onSpaceClick={(id) => console.log(`Space clicked: ${id}`)} // Added onSpaceClick
+          />
         )}
         {!isLoading && !error && warsawSpaces.length === 0 && (
           <p>Obecnie nie znaleziono żadnych przestrzeni coworkingowych w Warszawie w naszej bazie.</p>
