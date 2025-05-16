@@ -67,7 +67,7 @@ export default $config({
     const site = new sst.aws.StaticSite("viteSite", {
       path: ".",
       build: {
-        command: "npm run build:frontend",
+        command: "npm run build",
         output: "dist/public", // Output directory relative to 'path'
       },
       environment: {
