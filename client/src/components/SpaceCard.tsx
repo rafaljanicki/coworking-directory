@@ -1,3 +1,4 @@
+// Force re-deploy 2025-05-16
 import { CoworkingSpace } from "@shared/schema";
 import { Link } from "wouter";
 import StarRating from "@/components/ui/star-rating";
