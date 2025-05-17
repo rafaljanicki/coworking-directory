@@ -27,19 +27,20 @@ const Header = () => {
               onClick={() => setOffersMenuOpen(!offersMenuOpen)}
               className="hover:text-primary transition-colors flex items-center"
             >
-              Oferty Lokalne <ChevronDown className={`w-4 h-4 ml-1 transition-transform ${offersMenuOpen ? 'rotate-180' : ''}`} />
+              Miasta <ChevronDown className={`w-4 h-4 ml-1 transition-transform ${offersMenuOpen ? 'rotate-180' : ''}`} />
             </button>
             {offersMenuOpen && (
               <div className="absolute mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20">
-                <Link href="/oferta/warszawa" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-primary">
+                <Link href="/coworking-warszawa" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-primary">
                   Warszawa
                 </Link>
-                <Link href="/oferta/krakow" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-primary">
+                <Link href="/coworking-krakow" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-primary">
                   Kraków
                 </Link>
-                <Link href="/oferta/gdansk" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-primary">
+                <Link href="/coworking-gdansk" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-primary">
                   Gdańsk
                 </Link>
+                {/* Add more cities here as needed */}
               </div>
             )}
           </div>
@@ -77,16 +78,17 @@ const Header = () => {
               </Link>
             </div>
             <div>
-              <p className="text-gray-600 font-medium py-2 block">Oferty Lokalne:</p>
-              <Link href="/oferta/warszawa" className="text-gray-700 hover:text-primary py-1 block pl-4" onClick={() => setMobileMenuOpen(false)}>
+              <p className="text-gray-600 font-medium py-2 block">Miasta:</p>
+              <Link href="/coworking-warszawa" className="text-gray-700 hover:text-primary py-1 block pl-4" onClick={() => setMobileMenuOpen(false)}>
                 - Warszawa
               </Link>
-              <Link href="/oferta/krakow" className="text-gray-700 hover:text-primary py-1 block pl-4" onClick={() => setMobileMenuOpen(false)}>
+              <Link href="/coworking-krakow" className="text-gray-700 hover:text-primary py-1 block pl-4" onClick={() => setMobileMenuOpen(false)}>
                 - Kraków
               </Link>
-              <Link href="/oferta/gdansk" className="text-gray-700 hover:text-primary py-1 block pl-4" onClick={() => setMobileMenuOpen(false)}>
+              <Link href="/coworking-gdansk" className="text-gray-700 hover:text-primary py-1 block pl-4" onClick={() => setMobileMenuOpen(false)}>
                 - Gdańsk
               </Link>
+              {/* Add more cities here as needed */}
             </div>
             <div>
               <Link href="/blog" className="text-gray-800 font-medium hover:text-primary py-2 block" onClick={() => setMobileMenuOpen(false)}>

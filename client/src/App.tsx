@@ -9,7 +9,8 @@ import BlogPostPage from "@/pages/BlogPostPage";
 import OfertaWarszawaPage from "@/pages/OfertaWarszawaPage"; // Old offer page
 import OfertaKrakowPage from "@/pages/OfertaKrakowPage";   // Old offer page
 import OfertaGdanskPage from "@/pages/OfertaGdanskPage";   // Old offer page
-import CoworkingListingWarszawaPage from "@/pages/CoworkingListingWarszawaPage"; // New listing page
+// import CoworkingListingWarszawaPage from "@/pages/CoworkingListingWarszawaPage"; // Will be replaced by generic CityListingPage
+import CityListingPage from "@/pages/CityListingPage"; // New generic city page template
 import { HelmetProvider } from 'react-helmet-async';
 import { useEffect } from 'react';
 
@@ -35,9 +36,24 @@ function AppRouter() {
       <Route path="/oferta/krakow" component={OfertaKrakowPage} />
       <Route path="/oferta/gdansk" component={OfertaGdanskPage} />
 
-      {/* New city listing pages */}
-      <Route path="/coworking-warszawa" component={CoworkingListingWarszawaPage} />
-      {/* Add other city listing pages here, e.g. /coworking-krakow */}
+      {/* New city listing pages using the generic template */}
+      <Route path="/coworking-warszawa">
+        <CityListingPage cityName="Warszawa" citySlug="warszawa" />
+      </Route>
+      <Route path="/coworking-krakow">
+        <CityListingPage cityName="Kraków" citySlug="krakow" />
+      </Route>
+      <Route path="/coworking-gdansk">
+        <CityListingPage cityName="Gdańsk" citySlug="gdansk" />
+      </Route>
+      {/* Add other cities here following the pattern, e.g.:
+      <Route path="/coworking-poznan">
+        <CityListingPage cityName="Poznań" citySlug="poznan" />
+      </Route>
+      <Route path="/coworking-wroclaw">
+        <CityListingPage cityName="Wrocław" citySlug="wroclaw" />
+      </Route>
+      */}
 
       <Route component={NotFound} />
     </Switch>

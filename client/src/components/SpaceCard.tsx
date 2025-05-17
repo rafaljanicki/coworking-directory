@@ -32,7 +32,7 @@ const SpaceCard = ({ space, onClick }: SpaceCardProps) => {
           <img 
             className="h-48 w-full object-cover md:w-48" 
             src={space.imageUrl || '/logo.png'} 
-            alt={space.imageUrl ? `${space.name} Przestrzeń Coworkingowa` : 'Brak zdjęcia obiektu - logo BiuraCoworking.pl'} 
+            alt={space.imageUrl ? `${space.name} Przestrzeń Coworkingowa` : `${space.name} - brak zdjęcia`} 
             itemProp="image"
           />
         </div>
