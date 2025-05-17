@@ -6,9 +6,6 @@ import DetailPage from "@/pages/DetailPage";
 import ForOwnersPage from "@/pages/ForOwnersPage";
 import BlogListPage from "@/pages/BlogListPage";
 import BlogPostPage from "@/pages/BlogPostPage";
-import OfertaWarszawaPage from "@/pages/OfertaWarszawaPage"; // Old offer page
-import OfertaKrakowPage from "@/pages/OfertaKrakowPage";   // Old offer page
-import OfertaGdanskPage from "@/pages/OfertaGdanskPage";   // Old offer page
 // import CoworkingListingWarszawaPage from "@/pages/CoworkingListingWarszawaPage"; // Will be replaced by generic CityListingPage
 import CityListingPage from "@/pages/CityListingPage"; // New generic city page template
 import { HelmetProvider } from 'react-helmet-async';
@@ -31,11 +28,6 @@ function AppRouter() {
       <Route path="/space/:id" component={DetailPage} />
       <Route path="/dla-wlascicieli" component={ForOwnersPage} />
       
-      {/* Old offer pages - might be deprecated or removed later */}
-      <Route path="/oferta/warszawa" component={OfertaWarszawaPage} />
-      <Route path="/oferta/krakow" component={OfertaKrakowPage} />
-      <Route path="/oferta/gdansk" component={OfertaGdanskPage} />
-
       {/* New city listing pages using the generic template */}
       <Route path="/coworking-warszawa">
         <CityListingPage cityName="Warszawa" citySlug="warszawa" />
