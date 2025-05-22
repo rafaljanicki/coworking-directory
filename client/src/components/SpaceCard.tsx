@@ -9,6 +9,19 @@ interface SpaceCardProps {
   onClick: () => void;
 }
 
+const getDisplayImageUrl = (imageUrl: string | undefined | null): string => {
+  const placeholderSoon = '/img/office-placeholder-soon.png'; // For listings where image is coming soon
+  const defaultFallback = '/img/logo-placeholder-fallback.png'; // Fallback if imageUrl is null/empty, can be same as placeholderSoon or a generic no-image
+
+  if (imageUrl && imageUrl.includes('via.placeholder.com')) {
+    return placeholderSoon;
+  }
+  if (imageUrl) {
+    return imageUrl;
+  }
+  return defaultFallback; 
+};
+
 const SpaceCard = ({ space, onClick }: SpaceCardProps) => {
   // Helper function to get minimum price from pricing packages
   const getMinPrice = () => {
@@ -20,6 +33,11 @@ const SpaceCard = ({ space, onClick }: SpaceCardProps) => {
     return minPrice;
   };
   
+  const displayImageUrl = getDisplayImageUrl(space.imageUrl);
+  const imageAltText = (space.imageUrl && !space.imageUrl.includes('via.placeholder.com') && displayImageUrl !== '/img/office-placeholder-soon.png' && displayImageUrl !== '/img/logo-placeholder-fallback.png')
+    ? `${space.name} Przestrzeń Coworkingowa`
+    : `${space.name} - zdjęcie wkrótce`;
+
   return (
     <article 
       className="bg-white rounded-lg shadow-sm overflow-hidden mb-4 hover:shadow-md transition cursor-pointer"
@@ -31,8 +49,8 @@ const SpaceCard = ({ space, onClick }: SpaceCardProps) => {
         <div className="md:flex-shrink-0">
           <img 
             className="h-48 w-full object-cover md:w-48" 
-            src={space.imageUrl || '/logo.png'} 
-            alt={space.imageUrl ? `${space.name} Przestrzeń Coworkingowa` : `${space.name} - brak zdjęcia`} 
+            src={displayImageUrl} 
+            alt={imageAltText} 
             itemProp="image"
           />
         </div>
@@ -40,8 +58,8 @@ const SpaceCard = ({ space, onClick }: SpaceCardProps) => {
           <header className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900" itemProp="name">{space.name}</h2>
             <div itemProp="aggregateRating" itemScope itemType="https://schema.org/AggregateRating">
-              <meta itemProp="ratingValue" content={space.rating.toString()} />
-              <meta itemProp="reviewCount" content={Math.floor(Math.random() * 100 + 10).toString()} />
+              <meta itemProp="ratingValue" content={space.rating?.toString() ?? '0'} />
+              <meta itemProp="reviewCount" content={Math.floor(Math.random() * 100 + 10).toString()} /> 
               <StarRating rating={space.rating ?? 0} />
             </div>
           </header>
